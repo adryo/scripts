@@ -8,12 +8,13 @@
 # curl https://raw.githubusercontent.com/adryo/scripts/develop/create-ts-lib.sh | bash
 ###############################################################################
 
-# Idenfity platform
-PLATFORM=`uname`
-
 echo "Starting configuration..."
 read -p "Continue? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
 
+# Idenfity platform
+PLATFORM=`uname`
+
+# Request name
 read -p "Provide the lib name: " name
 
 if [[ !  -z $name ]]; then
@@ -38,4 +39,6 @@ if [[ !  -z $name ]]; then
     content="$(jq ".name = \"$name\"" $name/package.json)"
 
     echo "$content" > "$name/package.json"
+
+    cd $name && npm install && npm test
 fi
