@@ -5,7 +5,7 @@
 #
 # CREDITS
 # Source  : https://github.com/adryo/scripts
-# curl https://raw.githubusercontent.com/adryo/scripts/develop/create-ts-lib.sh | bash
+# bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/create-ts-lib.sh)
 ###############################################################################
 
 echo "Starting configuration..."
