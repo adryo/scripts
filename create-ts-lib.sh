@@ -34,6 +34,7 @@ if [[ !  -z $name ]]; then
     fi
 
     git clone  "https://github.com/adryo/typescript-library.git" $name
+    rm -rf "$name/.git/"
 
     echo "Updating package.json info"
     content="$(jq ".name = \"$name\"" $name/package.json)"
