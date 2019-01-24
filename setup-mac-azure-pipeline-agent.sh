@@ -33,10 +33,7 @@ if [ -z "$TOKEN" ]; then
 fi
 
 if [ -z "$POOL" ]; then
-    read -p "Pool's name (ENTER for TestAgent): " POOL
-    if [ -z "$POOL" ]; then
-      POOL="TestAgents"
-    fi
+    POOL="default"
 fi
 
 # Expect variables
