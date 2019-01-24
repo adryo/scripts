@@ -6,7 +6,7 @@ APPLE_USER=$2
 APPLE_PASSWD=$3
 SERVER_URL=$4
 TOKEN=$5
-POOL=$6"TestAgents"
+POOL=$6
 readonly XCODE_VERSIONS=(9.4 10.0 10.1)
 
 if [ -z "$AgentLogonPassword" ]; then
