@@ -13,5 +13,7 @@ Setup a macos fresh installation with all the resources to develop iOS, Android,
 Open a command line application (terminal), cd to the desired directory and execute the following:
 
 #### Unix based (Linux/MacOS)
+
 bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/create-ts-lib.sh)
+
 bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh)
