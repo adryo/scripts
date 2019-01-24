@@ -46,15 +46,7 @@ readonly AGENT_NAME="VM-MacOS-Mojave01"
 # VSTS Agent Variables
 readonly VSTS_AGENT_VERSION="2.144.2"
 
-# Download and install TCL
-readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
-readonly TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
-# curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
-curl -sL -O http://downloads.sourceforge.net/tcl/$TCL_PKG --output $TCL_PKG
-tar -xzf $TCL_PKG
-
 # Download and install Xcode Command Line Tools
-
 touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
 PROD=$(softwareupdate -l |
   grep "\*.*Command Line" |
@@ -63,6 +55,13 @@ PROD=$(softwareupdate -l |
   tr -d '\n')
 softwareupdate -i "$PROD" --verbose;
 rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+
+# Download and install TCL
+readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
+readonly TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
+# curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
+curl -sL -O http://downloads.sourceforge.net/tcl/$TCL_PKG --output $TCL_PKG
+tar -xzf $TCL_PKG
 
 # Compilation and installation
 make -C $TCL_FULL_NAME/macosx
@@ -99,7 +98,7 @@ rm -f domain_name-0.5.99999999.gem
 # Install Xcode 10.1, 10.0, 9.4
 for i in "${XCODE_VERSIONS[@]}"
 do
-	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+    expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 done
 
 ## Homebrew
