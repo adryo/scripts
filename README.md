@@ -16,8 +16,4 @@ Open a command line application (terminal), cd to the desired directory and exec
 
 bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/create-ts-lib.sh)
 
-bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) 
-
-or
-
-curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh | bash -s $LogonPassword $AppleUser $ApplePassword $AzureHost $PAT $PoolName
+bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) [$LogonPassword] [$AppleUser] [$ApplePassword] [$AzureHost] [$PAT] [$PoolName]
