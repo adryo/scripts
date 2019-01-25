@@ -51,6 +51,8 @@ readonly AGENT_NAME="VM-MacOS-Mojave01"
 # VSTS Agent Variables
 readonly VSTS_AGENT_VERSION="2.144.2"
 
+echo "Starting script..."
+
 install_xcodeclt() {
     printf $1
     # Download and install Xcode Command Line Tools
@@ -140,7 +142,7 @@ done
 
 ## Homebrew
 # The esiest way to setup mac is by using a package manager.
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
+expect -c "ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\" </dev/null; expect \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
