@@ -142,7 +142,7 @@ done
 
 ## Homebrew
 # The esiest way to setup mac is by using a package manager.
-expect -c "set timeout -1; spawn ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\" </dev/null; expect \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\" < /dev/null
 
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
