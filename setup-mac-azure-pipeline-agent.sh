@@ -115,8 +115,8 @@ install_expect(){
     make
 
     # Now, as the root user:
-#sudo make $EXPECT_FULL_NAME/install &&
-expect -c "spawn sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+    #sudo make $EXPECT_FULL_NAME/install &&
+    expect -c "spawn sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
 }
 
 if ! type expect >/dev/null 2>&1; then
@@ -142,7 +142,7 @@ done
 
 ## Homebrew
 # The esiest way to setup mac is by using a package manager.
-expect -c "spawn ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\" </dev/null; expect \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+expect -c "set timeout -1; spawn ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\" </dev/null; expect \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
