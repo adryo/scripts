@@ -106,16 +106,16 @@ install_expect(){
                 --mandir=/usr/share/man \
                 --with-tclinclude=/usr/include &&
     make
+
+    # Now, as the root user:
+#sudo make $EXPECT_FULL_NAME/install &&
+expect -c "spawn sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib; expect \"Password :\"; send \"$AgentLogonPassword\n\"; interact"
 }
 
 if ! type expect >/dev/null 2>&1; then
     echo "'Expect' not installed. Trying to install it automatically..."
     install_expect || exit 2
 fi
-
-# Now, as the root user:
-#sudo make $EXPECT_FULL_NAME/install &&
-expect -c "spawn sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib; expect \"Password :\"; send \"$AgentLogonPassword\n\"; interact"
 
 ## Install XCode-Install gem
 ## This will require you provide an Apple Developer Account's credentials
@@ -235,11 +235,11 @@ cd ~/VSTSAgents/agent01
 #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens) 
 #The Agent Pool should be Default for production or TestAgents for testing.
 #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
-./config.sh --unattended  --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
-./svc.sh install
+~/VSTSAgents/agent01/config.sh --unattended  --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
+~/VSTSAgents/agent01/svc.sh install
 
 # Link the .bash_profile file to load all ENV and configurations
-printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed runsvc.sh
+printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/VSTSAgents/agent01/runsvc.sh
 
 # Start the service
-./svc.sh start
+~/VSTSAgents/agent01/svc.sh start
