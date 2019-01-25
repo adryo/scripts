@@ -80,7 +80,6 @@ if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
 else 
     install_xcodeclt '%s\n' "Command Line Tools are not installed" || exit 2
 fi
-exit
 
 install_expect(){
     # Download and install TCL
