@@ -7,6 +7,7 @@ APPLE_PASSWD=$3
 SERVER_URL=$4
 TOKEN=$5
 POOL=$6
+TIMEZONE=$7
 readonly XCODE_VERSIONS=(9.4 10.0 10.1)
 
 if [ -z "$AgentLogonPassword" ]; then
@@ -34,6 +35,10 @@ fi
 
 if [ -z "$POOL" ]; then
     POOL="default"
+fi
+
+if [ -z "$TIMEZONE" ]; then
+    TIMEZONE="Europe/Paris"
 fi
 
 # Expect variables
@@ -232,6 +237,9 @@ tar xzf ~/VSTSAgents/$VSTS_AGENT_TARGZ_FILE
 
 cd ~/VSTSAgents/agent01
 #Step 4: Configuring this agent at TFS server
+# Set the timezone before configure
+expect -c "spawn sudo systemsetup -settimezone $TIMEZONE; expect \"Password :\"; send \"$AgentLogonPassword\n\""
+
 #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens) 
 #The Agent Pool should be Default for production or TestAgents for testing.
 #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
