@@ -46,40 +46,73 @@ readonly AGENT_NAME="VM-MacOS-Mojave01"
 # VSTS Agent Variables
 readonly VSTS_AGENT_VERSION="2.144.2"
 
-# Download and install Xcode Command Line Tools
-touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
-PROD=$(softwareupdate -l |
-  grep "\*.*Command Line" |
-  head -n 1 | awk -F"*" '{print $2}' |
-  sed -e 's/^ *//' |
-  tr -d '\n')
-softwareupdate -i "$PROD" --verbose;
-rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+install_xcodeclt() {
+    printf $1
+    # Download and install Xcode Command Line Tools
+    touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
+    PROD=$(softwareupdate -l |
+    grep "\*.*Command Line" |
+    head -n 1 | awk -F"*" '{print $2}' |
+    sed -e 's/^ *//' |
+    tr -d '\n')
+    softwareupdate -i "$PROD" --verbose;
+    rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+}
 
-# Download and install TCL
-readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
-readonly TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
-# curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
-curl -sL -O http://downloads.sourceforge.net/tcl/$TCL_PKG --output $TCL_PKG
-tar -xzf $TCL_PKG
+# Check for Xcode Command Line Tools
+if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
+    printf '%s\n' "CHECKING INSTALLATION"
+    count=0
+    pkgutil --files com.apple.pkg.CLTools_Executables |
+    while IFS= read file
+    do
+        test -e  "/${file}"         &&
+        printf '%s\n' "/${file} - (OK)" || { printf '%s\n' "/${file} - (MISSING)"; ((count++)); }
+    done
+    
+    if (( count > 0 )); then
+        install_xcodeclt '%s\n' "Command Line Tools are not installed properly" || exit 2
+        # Provide instructions to remove the CommandLineTools directory
+        # and the package receipt then install instructions
+    else 
+        printf '%s\n' "Command Line Tools found, you are good to go!"
+    fi
+else 
+    install_xcodeclt '%s\n' "Command Line Tools are not installed" || exit 2
+fi
+exit
 
-# Compilation and installation
-make -C $TCL_FULL_NAME/macosx
-make -C $TCL_FULL_NAME/macosx install INSTALL_ROOT="${HOME}/"
+install_expect(){
+    # Download and install TCL
+    readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
+    readonly TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
+    # curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
+    curl -sL -O http://downloads.sourceforge.net/tcl/$TCL_PKG --output $TCL_PKG
+    tar -xzf $TCL_PKG
 
-# Download and install Expect
-readonly EXPECT_FULL_NAME="expect${EXPECT_VERSION}"
-readonly EXPECT_PKG="${EXPECT_FULL_NAME}.tar.gz"
-curl -sL -O https://downloads.sourceforge.net/expect/$EXPECT_PKG --output $EXPECT_PKG
-tar -xzf $EXPECT_PKG
+    # Compilation and installation
+    make -C $TCL_FULL_NAME/macosx
+    make -C $TCL_FULL_NAME/macosx install INSTALL_ROOT="${HOME}/"
 
-# Install
-$EXPECT_FULL_NAME/configure --prefix=/usr           \
-            --with-tcl=/usr/lib     \
-            --enable-shared         \
-            --mandir=/usr/share/man \
-            --with-tclinclude=/usr/include &&
-make
+    # Download and install Expect
+    readonly EXPECT_FULL_NAME="expect${EXPECT_VERSION}"
+    readonly EXPECT_PKG="${EXPECT_FULL_NAME}.tar.gz"
+    curl -sL -O https://downloads.sourceforge.net/expect/$EXPECT_PKG --output $EXPECT_PKG
+    tar -xzf $EXPECT_PKG
+
+    # Install
+    $EXPECT_FULL_NAME/configure --prefix=/usr           \
+                --with-tcl=/usr/lib     \
+                --enable-shared         \
+                --mandir=/usr/share/man \
+                --with-tclinclude=/usr/include &&
+    make
+}
+
+if ! type expect >/dev/null 2>&1; then
+    echo "'Expect' not installed. Trying to install it automatically..."
+    install_expect || exit 2
+fi
 
 # Now, as the root user:
 #sudo make $EXPECT_FULL_NAME/install &&
@@ -98,12 +131,12 @@ rm -f domain_name-0.5.99999999.gem
 # Install Xcode 10.1, 10.0, 9.4
 for i in "${XCODE_VERSIONS[@]}"
 do
-    expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 done
 
 ## Homebrew
 # The esiest way to setup mac is by using a package manager.
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
 
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
@@ -175,7 +208,6 @@ expect -c "spawn sudo gem install cocoapods; expect \"Password :\"; send \"$Agen
 #https://github.com/Microsoft/azure-pipelines-agent/blob/master/README.md
 #https://github.com/Microsoft/azure-pipelines-agent/blob/master/docs/start/envosx.md
 
-
 #Step 1: Install the prerequisites
 brew install openssl
 echo 'export LDFLAGS="-L/usr/local/opt/openssl/lib"' >> ~/.bash_profile
@@ -199,6 +231,7 @@ curl https://vstsagentpackage.azureedge.net/agent/$VSTS_AGENT_VERSION/$VSTS_AGEN
 mkdir ~/VSTSAgents/agent01 && cd ~/VSTSAgents/agent01
 tar xzf ~/VSTSAgents/$VSTS_AGENT_TARGZ_FILE
 
+cd ~/VSTSAgents/agent01
 #Step 4: Configuring this agent at TFS server
 #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens) 
 #The Agent Pool should be Default for production or TestAgents for testing.
