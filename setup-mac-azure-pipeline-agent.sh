@@ -124,6 +124,10 @@ if ! type expect >/dev/null 2>&1; then
     install_expect || exit 2
 fi
 
+## Homebrew
+# The esiest way to setup mac is by using a package manager.
+ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\" < /dev/null
+
 ## Install XCode-Install gem
 ## This will require you provide an Apple Developer Account's credentials
 ## More info at: https://github.com/KrauseFx/xcode-install
@@ -139,10 +143,6 @@ for i in "${XCODE_VERSIONS[@]}"
 do
 	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 done
-
-## Homebrew
-# The esiest way to setup mac is by using a package manager.
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
 
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
