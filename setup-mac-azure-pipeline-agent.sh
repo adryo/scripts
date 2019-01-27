@@ -126,7 +126,9 @@ fi
 
 ## Homebrew
 # The esiest way to setup mac is by using a package manager.
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
+echo 'export PATH="~/homebrew/bin:$PATH"' >> ~/.bash_profile
+source ~/.bash_profile
 
 ## Install XCode-Install gem
 ## This will require you provide an Apple Developer Account's credentials
