@@ -129,9 +129,7 @@ if ! type brew >/dev/null 2>&1; then
     ## Homebrew
     # The esiest way to setup mac is by using a package manager.
     curl -sL -O https://raw.githubusercontent.com/Homebrew/install/master/install
-    expect -c "spawn ruby install < /dev/null; expect \"Password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue}"
-
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
+    expect -c "set timeout -1; spawn ruby install < /dev/null; expect \"Password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue}"
 fi
 
 ## Install XCode-Install gem
