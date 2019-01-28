@@ -130,6 +130,11 @@ if ! type brew >/dev/null 2>&1; then
     # The esiest way to setup mac is by using a package manager.
     # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
 
+    if [ -d "homebrew" ]; then
+        # Control will enter here if homebrew dir exist.
+        rm -rf /homebrew
+    fi
+    
     mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
     echo 'export PATH="~/homebrew/bin:$PATH"' >> ~/.bash_profile
     source ~/.bash_profile
