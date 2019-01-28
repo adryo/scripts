@@ -134,10 +134,10 @@ if ! type brew >/dev/null 2>&1; then
         # Control will enter here if homebrew dir exist.
         rm -rf /homebrew
     fi
-    
+
     mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
     echo 'export PATH="~/homebrew/bin:$PATH"' >> ~/.bash_profile
-    source ~/.bash_profile
+    # source ~/.bash_profile
 fi
 
 ## Install XCode-Install gem
