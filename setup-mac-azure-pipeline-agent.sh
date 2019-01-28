@@ -54,7 +54,7 @@ readonly VSTS_AGENT_VERSION="2.144.2"
 echo "Starting script..."
 
 install_xcodeclt() {
-    echo $1
+    printf '%s\n' $1
     # Download and install Xcode Command Line Tools
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
     PROD=$(softwareupdate -l |
@@ -67,7 +67,7 @@ install_xcodeclt() {
 }
 
 # Check for Xcode Command Line Tools
-echo "Looking for Xcode Command Line Tools"
+printf '%s\n' "Looking for Xcode Command Line Tools"
 if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
     printf '%s\n' "CHECKING INSTALLATION"
     count=0
@@ -79,14 +79,14 @@ if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
     done
     
     if (( count > 0 )); then
-        install_xcodeclt '%s\n' "Command Line Tools are not installed properly" || exit 2
+        install_xcodeclt "Command Line Tools are not installed properly" || exit 2
         # Provide instructions to remove the CommandLineTools directory
         # and the package receipt then install instructions
     else 
         printf '%s\n' "Command Line Tools found, you are good to go!"
     fi
 else 
-    install_xcodeclt '%s\n' "Command Line Tools are not installed" || exit 2
+    install_xcodeclt "Command Line Tools are not installed" || exit 2
 fi
 
 install_expect(){
