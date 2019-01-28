@@ -134,6 +134,7 @@ if ! type brew >/dev/null 2>&1; then
     # The esiest way to setup mac is by using a package manager.
     curl -sL -O https://raw.githubusercontent.com/Homebrew/install/master/install
     expectify "ruby install < /dev/null"
+    rm ~/install
 fi
 
 ## Install XCode-Install gem
