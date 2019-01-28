@@ -134,9 +134,6 @@ if ! type brew >/dev/null 2>&1; then
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
 fi
 
-brew tap caskroom/versions && brew cask install java8
-exit
-
 ## Install XCode-Install gem
 ## This will require you provide an Apple Developer Account's credentials
 ## More info at: https://github.com/KrauseFx/xcode-install
@@ -150,7 +147,7 @@ rm -f domain_name-0.5.99999999.gem
 # Install Xcode 10.1, 10.0, 9.4
 for i in "${XCODE_VERSIONS[@]}"
 do
-	# expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 done
 
 if ! type brew >/dev/null 2>&1; then
