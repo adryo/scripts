@@ -54,7 +54,7 @@ readonly VSTS_AGENT_VERSION="2.144.2"
 echo "Starting script..."
 
 install_xcodeclt() {
-    printf $1
+    echo $1
     # Download and install Xcode Command Line Tools
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
     PROD=$(softwareupdate -l |
@@ -67,6 +67,7 @@ install_xcodeclt() {
 }
 
 # Check for Xcode Command Line Tools
+echo "Looking for Xcode Command Line Tools"
 if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
     printf '%s\n' "CHECKING INSTALLATION"
     count=0
@@ -124,11 +125,15 @@ if ! type expect >/dev/null 2>&1; then
     install_expect || exit 2
 fi
 
-## Homebrew
-# The esiest way to setup mac is by using a package manager.
-mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-echo 'export PATH="~/homebrew/bin:$PATH"' >> ~/.bash_profile
-source ~/.bash_profile
+if ! type brew >/dev/null 2>&1; then
+    ## Homebrew
+    # The esiest way to setup mac is by using a package manager.
+    # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
+
+    mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
+    echo 'export PATH="~/homebrew/bin:$PATH"' >> ~/.bash_profile
+    source ~/.bash_profile
+fi
 
 ## Install XCode-Install gem
 ## This will require you provide an Apple Developer Account's credentials
@@ -145,6 +150,11 @@ for i in "${XCODE_VERSIONS[@]}"
 do
 	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 done
+
+if ! type brew >/dev/null 2>&1; then
+    echo "Unable to find Homebrew installation. Stoping the script..."
+    exit 2
+fi
 
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
