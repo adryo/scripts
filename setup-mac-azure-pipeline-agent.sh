@@ -54,7 +54,7 @@ readonly VSTS_AGENT_VERSION="2.144.2"
 echo "Starting script..."
 
 install_xcodeclt() {
-    printf '%s\n' $1
+    printf '%s\n' "$1"
     # Download and install Xcode Command Line Tools
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
     PROD=$(softwareupdate -l |
@@ -128,17 +128,12 @@ fi
 if ! type brew >/dev/null 2>&1; then
     ## Homebrew
     # The esiest way to setup mac is by using a package manager.
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
-
-    # if [ -d "homebrew" ]; then
-    #     # Control will enter here if homebrew dir exist.
-    #     rm -rf /homebrew
-    # fi
-
-    # mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-    # echo 'export PATH="~/homebrew/bin:$PATH"' >> ~/.bash_profile
-    # source ~/.bash_profile
+    curl -sL -O https://raw.githubusercontent.com/Homebrew/install/master/install
+    expect -c "spawn ruby install < /dev/null; expect \"Password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue}"
 fi
+
+brew tap caskroom/versions && brew cask install java8
+exit
 
 ## Install XCode-Install gem
 ## This will require you provide an Apple Developer Account's credentials
@@ -153,7 +148,7 @@ rm -f domain_name-0.5.99999999.gem
 # Install Xcode 10.1, 10.0, 9.4
 for i in "${XCODE_VERSIONS[@]}"
 do
-	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+	# expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
 done
 
 if ! type brew >/dev/null 2>&1; then
