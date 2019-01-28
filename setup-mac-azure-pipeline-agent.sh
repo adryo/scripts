@@ -167,7 +167,7 @@ echo "export JAVA_HOME=$(/usr/libexec/java_home)" >> ~/.bash_profile
 
 ##Android SDK##
 #Step 1: Install SDK
-brew tap homebrew/cask && brew cask install android-sdk && brew cask install android-ndk
+brew tap homebrew/cask && expectify "brew cask install android-sdk && brew cask install android-ndk"
 
 #Installing all build-tools and platforms
 sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >> out.txt
@@ -194,7 +194,7 @@ echo "export PATH=\$PATH:\$ANDROID_SDK_ROOT/emulator:\$ANDROID_SDK_ROOT/tools/bi
 
 ##Node JS##
 #Step 1: Installing Node.js and npm
-brew install node
+expectify "brew install node"
 
 echo 'export PATH="/usr/local/opt/icu4c/bin:$PATH"' >> ~/.bash_profile
 echo 'export PATH="/usr/local/opt/icu4c/sbin:$PATH"' >> ~/.bash_profile
@@ -215,7 +215,7 @@ rule="$USER  ALL=NOPASSWD:/usr/bin/xcode-select"
 expectify "sudo /bin/sh -c \"echo $rule >> /etc/sudoers\""
 
 # Install SBT
-brew install sbt
+expectify "brew install sbt"
 
 # Install gems
 expectify "sudo gem install xcodeproj"
@@ -228,7 +228,7 @@ expectify "sudo gem install cocoapods"
 #https://github.com/Microsoft/azure-pipelines-agent/blob/master/docs/start/envosx.md
 
 #Step 1: Install the prerequisites
-brew install openssl
+expectify "brew install openssl"
 echo 'export LDFLAGS="-L/usr/local/opt/openssl/lib"' >> ~/.bash_profile
 echo 'export CPPFLAGS="-I/usr/local/opt/openssl/include"' >> ~/.bash_profile
 echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >> ~/.bash_profile
@@ -238,8 +238,7 @@ ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/
 ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
 
 #Step 2: Install GIT
-brew install git
-brew install git-lfs
+expectify "brew install git && brew install git-lfs"
 
 #Step 3: Creating an agent
 readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
