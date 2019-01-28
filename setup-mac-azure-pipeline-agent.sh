@@ -89,6 +89,10 @@ else
     install_xcodeclt "Command Line Tools are not installed" || exit 2
 fi
 
+expectify(){
+    expect -c "set timeout -1; spawn $1; expect \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} $2"
+}
+
 install_expect(){
     # Download and install TCL
     readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
@@ -117,7 +121,7 @@ install_expect(){
 
     # Now, as the root user:
     #sudo make $EXPECT_FULL_NAME/install &&
-    expect -c "spawn sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+    expectify "sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib"
 }
 
 if ! type expect >/dev/null 2>&1; then
@@ -129,7 +133,7 @@ if ! type brew >/dev/null 2>&1; then
     ## Homebrew
     # The esiest way to setup mac is by using a package manager.
     curl -sL -O https://raw.githubusercontent.com/Homebrew/install/master/install
-    expect -c "set timeout -1; spawn ruby install < /dev/null; expect \"Password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue}"
+    expectify "ruby install < /dev/null"
 fi
 
 ## Install XCode-Install gem
@@ -138,14 +142,14 @@ fi
 curl -sL -O https://github.com/neonichu/ruby-domain_name/releases/download/v0.5.99999999/domain_name-0.5.99999999.gem
 
 # Global Variables
-expect -c "spawn sudo gem install domain_name-0.5.99999999.gem; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
-expect -c "spawn sudo gem install --conservative xcode-install; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+expectify "sudo gem install domain_name-0.5.99999999.gem"
+expectify "sudo gem install --conservative xcode-install"
 
 rm -f domain_name-0.5.99999999.gem
 # Install Xcode 10.1, 10.0, 9.4
 for i in "${XCODE_VERSIONS[@]}"
 do
-	expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue} \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue}"
+	expectify "xcversion install $i" "\"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWD\n\"; exp_continue}"
 done
 
 if ! type brew >/dev/null 2>&1; then
@@ -156,7 +160,7 @@ fi
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
 #The easiest way to install Oracle Java JDK 8 on Mac is via a pkg manager
-brew tap caskroom/versions && brew cask install java8
+brew tap caskroom/versions && expectify "brew cask install java8"
 
 #Step 2: Add JAVA_HOME into env
 echo "export JAVA_HOME=$(/usr/libexec/java_home)" >> ~/.bash_profile
@@ -200,7 +204,7 @@ echo 'export LDFLAGS="-L/usr/local/opt/icu4c/lib"' >> ~/.bash_profile
 echo 'export CPPFLAGS="-I/usr/local/opt/icu4c/include"' >> ~/.bash_profile
 
 # Alternatively using Fastlane
-expect -c "spawn sudo gem install fastlane; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+expectify "sudo gem install fastlane"
 echo 'export PATH="$HOME/.fastlane/bin:$PATH"' >> ~/.bash_profile
 echo "export LC_ALL=en_US.UTF-8" >> ~/.bash_profile
 echo "export LANG=en_US.UTF-8" >> ~/.bash_profile
@@ -208,16 +212,16 @@ echo "export LANGUAGE=en_US.UTF-8" >> ~/.bash_profile
 
 # Register xcode-select for remotely use
 rule="$USER  ALL=NOPASSWD:/usr/bin/xcode-select"
-expect -c "spawn sudo /bin/sh -c \"echo $rule >> /etc/sudoers\"; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+expectify "sudo /bin/sh -c \"echo $rule >> /etc/sudoers\""
 
 # Install SBT
 brew install sbt
 
 # Install gems
-expect -c "spawn sudo gem install xcodeproj; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+expectify "sudo gem install xcodeproj"
 
 # Install cocoapods
-expect -c "spawn sudo gem install cocoapods; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+expectify "sudo gem install cocoapods"
 
 ##VSTS Agent##
 #https://github.com/Microsoft/azure-pipelines-agent/blob/master/README.md
@@ -249,7 +253,7 @@ tar xzf ~/VSTSAgents/$VSTS_AGENT_TARGZ_FILE
 cd ~/VSTSAgents/agent01
 #Step 4: Configuring this agent at TFS server
 # Set the timezone before configure
-expect -c "spawn sudo systemsetup -settimezone $TIMEZONE; expect \"Password :\"; send \"$AgentLogonPassword\n\";"
+expectify "sudo systemsetup -settimezone $TIMEZONE"
 
 #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens) 
 #The Agent Pool should be Default for production or TestAgents for testing.
