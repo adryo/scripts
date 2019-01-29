@@ -74,7 +74,7 @@ if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
     pkgutil --files com.apple.pkg.CLTools_Executables |
     while IFS= read file
     do
-        test -e  "/${file}"         &&
+        test -e  "/${file}" &&
         printf '%s\n' "/${file} - (OK)" || { printf '%s\n' "/${file} - (MISSING)"; ((count++)); }
     done
     
@@ -161,14 +161,17 @@ fi
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
 #The easiest way to install Oracle Java JDK 8 on Mac is via a pkg manager
-brew tap caskroom/versions && expectify "brew cask install java8"
+brew tap caskroom/versions
+expectify "brew cask install java8"
 
 #Step 2: Add JAVA_HOME into env
 echo "export JAVA_HOME=$(/usr/libexec/java_home)" >> ~/.bash_profile
 
 ##Android SDK##
 #Step 1: Install SDK
-brew tap homebrew/cask && expectify "brew cask install android-sdk && brew cask install android-ndk"
+brew tap homebrew/cask 
+expectify "brew cask install android-sdk"
+expectify "brew cask install android-ndk"
 
 #Installing all build-tools and platforms
 sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >> out.txt
@@ -239,7 +242,8 @@ ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/
 ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
 
 #Step 2: Install GIT
-expectify "brew install git && brew install git-lfs"
+expectify "brew install git"
+expectify "brew install git-lfs"
 
 #Step 3: Creating an agent
 readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
