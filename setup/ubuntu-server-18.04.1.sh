@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
+sudo apt-get install -y software-properties-common
+sudo apt-add-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
 sudo apt-add-repository -y ppa:teejee2008/ppa
 sudo apt update && sudo apt upgrade -y && sudo apt dist-upgrade -y
 sudo apt install fail2ban libgtk-3-dev timeshift msr-tools expect -y
