@@ -235,7 +235,7 @@
 
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
-        error "'msr-tools' not installed. Trying to install automatically..."
+        echo "'msr-tools' not installed. Trying to install automatically..."
         expectify "sudo apt install msr-tools -y"
       fi
 
