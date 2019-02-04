@@ -236,7 +236,7 @@
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
         echo "'msr-tools' not installed. Trying to install automatically..."
-        expectify "sudo apt install msr-tools -y"
+        sudo apt install msr-tools -y
       fi
 
       VT_CHECK=$(sudo modprobe msr && sudo rdmsr 0x3a)
@@ -270,14 +270,14 @@
 
   installVBox(){
     info "Attempting to download VirtualBox"
-    expectify "wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -"
-    expectify "wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -"
+    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+    wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
     info "Downloaded VirtualBox repos asc files"    
     sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
-    expectify "sudo apt update"
-    expectify "sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms"
-    expectify "sudo apt update"
-    expectify "sudo apt-get install virtualbox-5.2 -y"
+    sudo apt update
+    sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
+    sudo apt update
+    sudo apt-get install virtualbox-5.2 -y
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
     EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
 
@@ -287,7 +287,7 @@
 
       if [ $? -eq 0 ]; then
           info "Extension packs downloaded. Proceeding with installation..."
-          expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+          sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace
       else
           echo "Unable to download Extension Packs. Stoping installation."
           exit 1
