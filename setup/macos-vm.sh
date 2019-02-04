@@ -274,8 +274,10 @@
     expectify "wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -"
     info "Downloaded VirtualBox repos asc files"
     expectify "sudo sh -c 'echo \"deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib\" >> /etc/apt/sources.list.d/virtualbox.list'"
-    expectify "sudo apt update && sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms"
-    expectify "sudo apt update && sudo apt-get install virtualbox-5.2 -y"
+    expectify "sudo apt update"
+    expectify "sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms"
+    expectify "sudo apt update"
+    expectify "sudo apt-get install virtualbox-5.2 -y"
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
     EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
 
