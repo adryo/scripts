@@ -384,6 +384,7 @@
 
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium "$DST_CLOVER.iso"
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium "$DST_ISO"
+    result "Done!"
   }
 
   detach(){
@@ -396,6 +397,7 @@
 
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none 
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium none
+    result "Done!"
   }
 
   # This step runs inmediatly after the vm creation 
