@@ -187,10 +187,10 @@
 
   readonly DST_DIR="$HOME/VirtualBox VMs/"
   readonly VM_DIR="$DST_DIR$VM"
-  readonly DST_CLOVER="$MEDIA_DIR/${VM}-Clover"
+  readonly DST_CLOVER="${MEDIA_DIR}${VM}-Clover"
   readonly DST_VOL="/Volumes/$VM"
-  readonly DST_ISO="$MEDIA_DIR/$VM.iso.cdr"
-  readonly FILE_LOG="$MEDIA_DIR/${VM}Installation.log"
+  readonly DST_ISO="${MEDIA_DIR}$VM.iso.cdr"
+  readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
   ###############################################################################
   # Logging #####################################################################
   if [ ! -f "$FILE_LOG" ]; then
@@ -442,7 +442,7 @@
       debug "line $line - command '$command' exited with status: $err."
       debug "In $funcstack called at line $linecallfunc."
       debug "From function ${funcstack[0]} (line $linecallfunc)."
-      error "Look at $FILE_LOG for details (or use Console.app). Press enter in the terminal when done..."
+      error "Look at $FILE_LOG for details. Press enter in the terminal when done..."
       read -r
     fi
   }
