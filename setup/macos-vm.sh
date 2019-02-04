@@ -20,7 +20,7 @@
   FTP_USER="" # Can be set using --ftp-user
   FTP_PASSWORD="" # Can be set using --ftp-password
   FTP_HOST="" # Can be set using --ftp-host
-  FTP_DIR="" # Can be ser using --ftp-dir
+  FTP_DIR="" # Can be set using --ftp-dir
 
   # Other variables
   VM_SNAPSHOT_TAG=""
@@ -114,12 +114,12 @@
         echo "all: From a fresh installation state, this command executes a check, create and prepare commands in that order to make a clean VM configuration and proceed to prepare MacOS installation."
         echo ""
         echo "Available options:"
-        echo "--help: Display this option descrition."
+        echo "--help: Display the usage tips plus tasks and options descriptions."
         echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
         echo "--ftp-user: Sets the ftp user's name to download the installation media if they are not present in the ubuntu host."
         echo "--ftp-password: Sets the ftp user's password to download the installation media if they are not present in the ubuntu host."
-        echo "--ftp-host: Sets the ftp host's name to download the installation media if they are not present in the ubuntu host. Most be set in this format 'ftp://host-name/'."
-        echo "--ftp-dir: Sets the ftp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Most be set in this format 'dirname/'."
+        echo "--ftp-host: Sets the ftp host name to download the installation media if they are not present in the ubuntu host. Must be set in this format 'ftp://host-name/'."
+        echo "--ftp-dir: Sets the ftp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Must be set in this format 'dirname/'."
         echo "--vm-name: Sets the name of the VM. By default VM takes the name according the installation media file name. Ex. MacOS-Mojave."
         echo "--vm-hdd-size: Sets the amount (integer) of Gigabytes to set in the VM's HDD. Default to 100 Gb."
         echo "--vm-ram-size: Sets the amount (integer) of Gigabytes to set in VM's RAM. Default to 4 Gb."
