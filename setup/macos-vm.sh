@@ -38,113 +38,108 @@
   PLATFORM=`uname`
   MEDIA_DIR="$HOME/installer/"
 
-  # Flag for checking if there's a task to run or not
-  hasCommand=0
+  # Array to collect the tasks to execute
+  tasks=()
 
   # This function is used to initialize the variables according to the supplied values through the scripts arguments
-  initialize() {
-      while [ "$#" -ne 0 ]; do
-          ARG="$1"
-          shift # get rid of $1, we saved in ARG already
-          case "$ARG" in
-          --ftp-host) 
-            FTP_HOST=$1
-            shift 
-          ;;
-          --ftp-user) 
-            FTP_USER=$1
-            shift 
-          ;;
-          --ftp-password) 
-            FTP_PASSWORD=$1
-            shift 
-          ;;
-          --ftp-dir) 
-            FTP_DIR=$1
-            shift 
-          ;;
-          --logon-password) 
-            AgentLogonPassword=$1
-            shift 
-          ;;
-          --vm-name) 
-            VM=$1
-            shift 
-          ;;
-          --vm-hdd-size) 
-            VM_HDD_SIZE=$(expr $1 \* 1024)
-            shift 
-          ;;
-          --vm-ram-size) 
-            VM_RAM=$(expr $1 \* 1024)
-            shift 
-          ;;
-          --vm-cpu) 
-            VM_CPU=$1
-            shift 
-          ;;
-          --vm-rdp-port) 
-            RDP_PORT=$1
-            shift 
-          ;;
-          --vm-ssh-port) 
-            SSH_PORT=$1
-            shift 
-          ;;
-          --vm-snapshot-tag) 
-            VM_SNAPSHOT_TAG=$1
-            shift 
-          ;;
-          --help) 
-            echo "Usage:"
-            echo "./mascos-vm.sh [task][task] [--options]"
-            echo ""
-            echo "Available tasks:"
-            echo "check: Check if the dependencies are installed correctly and if the hardware supports virtualization to proceed with the VM creation."
-            echo "stash: Removes a previously created VM."
-            echo "info: Returns the info of the VM if exists."
-            echo "snapshot: Creates an instant snapshot of the VM. Use the option --vm-snapshot-tag to customize the identification of the snapshot."
-            echo "run: Runs the VM if it is stopped."
-            echo "attach: Attaches the installation and boot loader medias ISO files. It’s used internally in the prepare command."
-            echo "detach: Detaches the installation media, letting the VM run only by the main HDD media."
-            echo "prepare: Executes the VM to prepare it for installation."
-            echo "stop: Stops the VM execution if it is running."
-            echo "create: Creates a VM if there is no one created. When using this command is recommended execute the stash one before, to make sure the deletion of any previous VM configuration."
-            echo "install: This command installs Virtual Box from the repo via command line. It may require sudo permission. Check option --logon-password for unattended execution."
-            echo "all: From a fresh installation state, this command executes a check, create and prepare commands in that order to make a clean VM configuration and proceed to prepare MacOS installation."
-            echo ""
-            echo "Available options:"
-            echo "--help: Display this option descrition."
-            echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
-            echo "--ftp-user: Sets the ftp user's name to download the installation media if they are not present in the ubuntu host."
-            echo "--ftp-password: Sets the ftp user's password to download the installation media if they are not present in the ubuntu host."
-            echo "--ftp-host: Sets the ftp host's name to download the installation media if they are not present in the ubuntu host. Most be set in this format 'ftp://host-name/'."
-            echo "--ftp-dir: Sets the ftp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Most be set in this format 'dirname/'."
-            echo "--vm-name: Sets the name of the VM. By default VM takes the name according the installation media file name. Ex. MacOS-Mojave."
-            echo "--vm-hdd-size: Sets the amount (integer) of Gigabytes to set in the VM's HDD. Default to 100 Gb."
-            echo "--vm-ram-size: Sets the amount (integer) of Gigabytes to set in VM's RAM. Default to 4 Gb."
-            echo "--vm-cpu: Sets the amount of CPU to set in the VM's instance. Default is 2."
-            echo "--vm-rdp-port: Sets the port to connect via RDP to the VM's instance while it's running. Default is 3389."
-            echo "--vm-ssh-port: Sets the port to connect via SSH to the VM's instance while it's running. Default is 2222."
-            echo "--vm-snapshot-tag: Sets an custom tag identifier for the snapshot. Only usable when executing snapshot task."
-            exit 0
-          ;;
-          all|check|info|run|stop|stash|snapshot|attach|detach|install|create|prepare)
-            hasCommand=1
-          ;;
-          *)
-            echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
-            exit 1
-          ;;
-          esac
-      done
-  }
+  while [ "$#" -ne 0 ]; do
+      ARG="$1"
+      shift # get rid of $1, we saved in ARG already
+      case "$ARG" in
+      --ftp-host) 
+        FTP_HOST=$1
+        shift 
+      ;;
+      --ftp-user) 
+        FTP_USER=$1
+        shift 
+      ;;
+      --ftp-password) 
+        FTP_PASSWORD=$1
+        shift 
+      ;;
+      --ftp-dir) 
+        FTP_DIR=$1
+        shift 
+      ;;
+      --logon-password) 
+        AgentLogonPassword=$1
+        shift 
+      ;;
+      --vm-name) 
+        VM=$1
+        shift 
+      ;;
+      --vm-hdd-size) 
+        VM_HDD_SIZE=$(expr $1 \* 1024)
+        shift 
+      ;;
+      --vm-ram-size) 
+        VM_RAM=$(expr $1 \* 1024)
+        shift 
+      ;;
+      --vm-cpu) 
+        VM_CPU=$1
+        shift 
+      ;;
+      --vm-rdp-port) 
+        RDP_PORT=$1
+        shift 
+      ;;
+      --vm-ssh-port) 
+        SSH_PORT=$1
+        shift 
+      ;;
+      --vm-snapshot-tag) 
+        VM_SNAPSHOT_TAG=$1
+        shift 
+      ;;
+      --help) 
+        echo "Usage:"
+        echo ""
+        echo "./mascos-vm.sh [task][task] [--options]"
+        echo ""
+        echo "Available tasks:"
+        echo "check: Check if the dependencies are installed correctly and if the hardware supports virtualization to proceed with the VM creation."
+        echo "stash: Removes a previously created VM."
+        echo "info: Returns the info of the VM if exists."
+        echo "snapshot: Creates an instant snapshot of the VM. Use the option --vm-snapshot-tag to customize the identification of the snapshot."
+        echo "run: Runs the VM if it is stopped."
+        echo "attach: Attaches the installation and boot loader medias ISO files. It’s used internally in the prepare command."
+        echo "detach: Detaches the installation media, letting the VM run only by the main HDD media."
+        echo "prepare: Executes the VM to prepare it for installation."
+        echo "stop: Stops the VM execution if it is running."
+        echo "create: Creates a VM if there is no one created. When using this command is recommended execute the stash one before, to make sure the deletion of any previous VM configuration."
+        echo "install: This command installs Virtual Box from the repo via command line. It may require sudo permission. Check option --logon-password for unattended execution."
+        echo "all: From a fresh installation state, this command executes a check, create and prepare commands in that order to make a clean VM configuration and proceed to prepare MacOS installation."
+        echo ""
+        echo "Available options:"
+        echo "--help: Display this option descrition."
+        echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
+        echo "--ftp-user: Sets the ftp user's name to download the installation media if they are not present in the ubuntu host."
+        echo "--ftp-password: Sets the ftp user's password to download the installation media if they are not present in the ubuntu host."
+        echo "--ftp-host: Sets the ftp host's name to download the installation media if they are not present in the ubuntu host. Most be set in this format 'ftp://host-name/'."
+        echo "--ftp-dir: Sets the ftp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Most be set in this format 'dirname/'."
+        echo "--vm-name: Sets the name of the VM. By default VM takes the name according the installation media file name. Ex. MacOS-Mojave."
+        echo "--vm-hdd-size: Sets the amount (integer) of Gigabytes to set in the VM's HDD. Default to 100 Gb."
+        echo "--vm-ram-size: Sets the amount (integer) of Gigabytes to set in VM's RAM. Default to 4 Gb."
+        echo "--vm-cpu: Sets the amount of CPU to set in the VM's instance. Default is 2."
+        echo "--vm-rdp-port: Sets the port to connect via RDP to the VM's instance while it's running. Default is 3389."
+        echo "--vm-ssh-port: Sets the port to connect via SSH to the VM's instance while it's running. Default is 2222."
+        echo "--vm-snapshot-tag: Sets a custom tag identifier for the snapshot. Only usable when executing snapshot task."
+        exit 0
+      ;;
+      all|check|info|run|stop|stash|snapshot|attach|detach|install|create|prepare)
+        tasks+=($ARG)
+      ;;
+      *)
+        echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
+        exit 1
+      ;;
+      esac
+  done
 
-  # Request initialization
-  ARGS=$@
-  initialize $ARGS
-
-  if [ $hasCommand -eq 0 ]; then
+  if [ -z "$tasks" ]; then
     echo "No task to execute, the script will do nothing. Please use the option --help to see usage."
     exit 1
   fi
@@ -466,5 +461,5 @@
   ###############################################################################
 
   # Run script ##################################################################
-  [[ ${BASH_SOURCE[0]} == "${0}" ]] && trap 'cleanup "${?}" "${LINENO}" "${BASH_LINENO}" "${BASH_COMMAND}" $(printf "::%s" ${FUNCNAME[@]:-})' EXIT && main "${@:-}"
+  [[ ${BASH_SOURCE[0]} == "${0}" ]] && trap 'cleanup "${?}" "${LINENO}" "${BASH_LINENO}" "${BASH_COMMAND}" $(printf "::%s" ${FUNCNAME[@]:-})' EXIT && main "${tasks[@]}"
   ###############################################################################
