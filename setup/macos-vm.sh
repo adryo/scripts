@@ -4,7 +4,7 @@
   # Run macOS 10.14 Mojave in Virtualbox.
   # 
   ###############################################################################
-  # bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
+  # bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) all --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
   # Core parameters #############################################################
   AgentLogonPassword=""
 
@@ -23,6 +23,7 @@
   FTP_DIR="" # Can be ser using --ftp-dir
 
   # Other variables
+  VM_SNAPSHOT_TAG=""
   readonly VM_VRAM="128"
   readonly PREPARATION_TIMEOUT=1800 # 30 minutes
   readonly EXT_PACK_LICENSE="56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb"
@@ -36,6 +37,9 @@
   # Idenfity platform
   PLATFORM=`uname`
   MEDIA_DIR="$HOME/installer/"
+
+  # Flag for checking if there's a task to run or not
+  hasCommand=0
 
   # This function is used to initialize the variables according to the supplied values through the scripts arguments
   initialize() {
@@ -87,6 +91,10 @@
             SSH_PORT=$1
             shift 
           ;;
+          --vm-snapshot-tag) 
+            VM_SNAPSHOT_TAG=$1
+            shift 
+          ;;
           --help) 
             echo "Usage:"
             echo "./mascos-vm.sh [task][task] [--options]"
@@ -95,7 +103,7 @@
             echo "check: Check if the dependencies are installed correctly and if the hardware supports virtualization to proceed with the VM creation."
             echo "stash: Removes a previously created VM."
             echo "info: Returns the info of the VM if exists."
-            echo "snapshot: Creates an instant snapshot of the VM."
+            echo "snapshot: Creates an instant snapshot of the VM. Use the option --vm-snapshot-tag to customize the identification of the snapshot."
             echo "run: Runs the VM if it is stopped."
             echo "attach: Attaches the installation and boot loader medias ISO files. It’s used internally in the prepare command."
             echo "detach: Detaches the installation media, letting the VM run only by the main HDD media."
@@ -116,12 +124,14 @@
             echo "--vm-hdd-size: Sets the amount (integer) of Gigabytes to set in the VM's HDD. Default to 100 Gb."
             echo "--vm-ram-size: Sets the amount (integer) of Gigabytes to set in VM's RAM. Default to 4 Gb."
             echo "--vm-cpu: Sets the amount of CPU to set in the VM's instance. Default is 2."
-
             echo "--vm-rdp-port: Sets the port to connect via RDP to the VM's instance while it's running. Default is 3389."
             echo "--vm-ssh-port: Sets the port to connect via SSH to the VM's instance while it's running. Default is 2222."
+            echo "--vm-snapshot-tag: Sets an custom tag identifier for the snapshot. Only usable when executing snapshot task."
             exit 0
           ;;
-          all|check|info|run|stop|stash|snapshot|attach|detach|install|create|prepare);;
+          all|check|info|run|stop|stash|snapshot|attach|detach|install|create|prepare)
+            hasCommand=1
+          ;;
           *)
             echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
             exit 1
@@ -133,6 +143,11 @@
   # Request initialization
   ARGS=$@
   initialize $ARGS
+
+  if [ $hasCommand -eq 0 ]; then
+    echo "No task to execute, the script will do nothing. Please use the option --help to see usage."
+    exit 1
+  fi
 
   # Extract ISO name
   if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
@@ -409,7 +424,7 @@
     NOW=`date +"%m-%d-%Y%T"`
     SNAPSHOT_DESCRIPTION="Snapshot taken on $NOW"
 
-    vboxmanage snapshot $VM take "${name}_${NOW}" --description "$SNAPSHOT_DESCRIPTION"
+    vboxmanage snapshot $VM take "${name}_${NOW}" --description "${VM_SNAPSHOT_TAG}$SNAPSHOT_DESCRIPTION"
   }
 
   cleanup() {
