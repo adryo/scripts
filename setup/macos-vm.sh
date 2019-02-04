@@ -239,7 +239,7 @@
         expectify "sudo apt install msr-tools -y"
       fi
 
-      VT_CHECK="$(expectify 'sudo modprobe msr && sudo rdmsr 0x3a')"
+      VT_CHECK=$(sudo modprobe msr && sudo rdmsr 0x3a)
 
       echo "Checking virtualization: $VT_CHECK"
 
