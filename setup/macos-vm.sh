@@ -157,7 +157,6 @@
   echo "* RDP port: $RDP_PORT"
   echo "* SSH port: $SSH_PORT"
 
-exit
   readonly DST_DIR="$HOME/VirtualBox VMs/"
   readonly VM_DIR="$DST_DIR$VM"
   readonly DST_CLOVER="$MEDIA_DIR/${VM}-Clover"
