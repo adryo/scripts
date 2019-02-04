@@ -2,10 +2,9 @@
   #
   # DESCRIPTION
   # Run macOS 10.14 Mojave in Virtualbox.
-  #
-  # CREDITS
-  # Source  : https://github.com/AlexanderWillner/runMacOSinVirtualBox
+  # 
   ###############################################################################
+  # bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
   # Core parameters #############################################################
   AgentLogonPassword=""
 
@@ -22,7 +21,6 @@
   FTP_PASSWORD="" # Can be set using --ftp-password
   FTP_HOST="" # Can be set using --ftp-host
   FTP_DIR="" # Can be ser using --ftp-dir
-
 
   # Other variables
   readonly VM_VRAM="128"
@@ -159,6 +157,7 @@
   echo "* RDP port: $RDP_PORT"
   echo "* SSH port: $SSH_PORT"
 
+exit
   readonly DST_DIR="$HOME/VirtualBox VMs/"
   readonly VM_DIR="$DST_DIR$VM"
   readonly DST_CLOVER="$MEDIA_DIR/${VM}-Clover"
