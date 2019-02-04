@@ -146,7 +146,7 @@
 
   # Extract ISO name
   if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
-    echo "ISO files not found, attempting to download them."
+    info "ISO files not found, attempting to download them." 100
     if [ -z "$FTP_USER" ]; then
         read -p "Apple account's email: " FTP_USER
     fi
@@ -163,9 +163,9 @@
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
 
     if [ $? -eq 0 ]; then
-        echo "ISO files downloaded. Proceeding with installation..."
+        result "ISO files downloaded. Proceeding with installation..."
     else
-        echo "Unable to download media. Stoping installation."
+        result "Unable to download media. Stoping installation."
         exit 1
     fi
   fi
@@ -225,7 +225,6 @@
 
   log() {
     datestring="$(date +'%Y-%m-%d %H:%M:%S')"
-    printf '%s\n' "[$datestring] $1"
     printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
   }
 
@@ -281,10 +280,10 @@
     sudo apt update
     sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
     result "Done!"
+
     info "Installing Virtual Box package..." 0
     sudo apt update
     sudo apt-get install virtualbox-5.2 -y
-
     result "Done!" 0
 
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
