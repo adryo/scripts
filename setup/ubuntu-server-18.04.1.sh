@@ -12,6 +12,7 @@ sudo fail2ban-client add local
 sudo fail2ban-client set local addignoreip 127.0.0.1/8
 sudo fail2ban-client set local addignoreip 192.168.1.1/24
 sudo fail2ban-client set local addignoreip 37.1.253.226
+sudo fail2ban-client set local addignoreip 80.14.101.106
 #findtime  = 5m
 sudo fail2ban-client set local findtime 5m
 #maxretry = 5
