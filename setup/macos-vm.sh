@@ -225,7 +225,8 @@
 
   log() {
     datestring="$(date +'%Y-%m-%d %H:%M:%S')"
-    echo "[$datestring] $1" >> "$FILE_LOG"
+    printf '%s\n' "[$datestring] $1"
+    printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
   }
 
   runChecks() {
@@ -282,7 +283,13 @@
       info "Attempting to download VirtualBox extensions pack version $VB_VERSION"
       wget "http://download.virtualbox.org/virtualbox/$VB_VERSION/$EXT_PACK"
 
-      expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+      if [ $? -eq 0 ]; then
+          info "Extension packs downloaded. Proceeding with installation..."
+          expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+      else
+          echo "Unable to download Extension Packs. Stoping installation."
+          exit 1
+      fi
     fi
 
     # Add user to vboxusers group
