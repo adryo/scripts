@@ -235,27 +235,27 @@
 
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
-        error "'msr-tools' not installed. Trying to install automatically..."
+        error "'msr-tools' not installed. Trying to install automatically..." 0
         sudo apt install msr-tools -y
       fi
 
       VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"
 
-      info "Checking virtualization: $VT_CHECK"
+      info "Checking virtualization: $VT_CHECK" 0
 
       if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) ]; then
-        error "'Vt-x' is not supported in this machine. Please use a different hardware."
+        error "'Vt-x' is not supported in this machine. Please use a different hardware." 0
         exit 1;
       fi
 
       if [ "$VT_CHECK" = "1" ]; then
-        error "'Vt-x' is supported but is currently disabled. Please enable it in the BIOS configuration and run this script again."
+        error "'Vt-x' is supported but is currently disabled. Please enable it in the BIOS configuration and run this script again." 0
         exit 1;
       fi
     fi
 
     if ! type vboxmanage >/dev/null 2>&1; then
-      error "'VBoxManage' not installed. Trying to install automatically..."
+      error "'VBoxManage' not installed. Trying to install automatically..." 0
       installVBox || exit 2
     fi
   }
@@ -269,29 +269,38 @@
   }
 
   installVBox(){
-    info "Attempting to obtain VirtualBox keys"
+    info "Attempting to obtain VirtualBox keys" 0
     wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-    info "Obtained"
-    info "Setting VBox repo source"
+    result "Done!"
+    info "Setting VBox repo source" 0
     sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
+    result "Done!"
+
+    info "Installing Virtual Box previous requirements..." 0
     sudo apt update
     sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
+    result "Done!"
+    info "Installing Virtual Box package..." 0
     sudo apt update
     sudo apt-get install virtualbox-5.2 -y
-    
+
+    result "Done!" 0
+
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
     EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
 
+    info "Installed version $VB_VERSION." 0
+
     if [ ! -f "./$EXT_PACK" ]; then
-      info "Attempting to download VirtualBox extensions pack version $VB_VERSION"
+      info "Attempting to download VirtualBox extensions pack version $VB_VERSION" 0
       wget "http://download.virtualbox.org/virtualbox/$VB_VERSION/$EXT_PACK"
 
       if [ $? -eq 0 ]; then
-          info "Extension packs downloaded. Proceeding with installation..."
+          result "Extension packs downloaded. Proceeding with installation..."
           sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace
       else
-          echo "Unable to download Extension Packs. Stoping installation."
+          result "Unable to download Extension Packs. Stoping installation."
           exit 1
       fi
     fi
@@ -311,7 +320,7 @@
       result "."
       vboxmanage createhd --filename "$VM_DIR/$VM.vdi" --variant Standard --size "$VM_HDD_SIZE"
     else
-      result "already exists."
+      result "already exists." 0
     fi
     info "Creating VM '$VM' (around 2 seconds)..." 99
     if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
