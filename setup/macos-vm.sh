@@ -134,7 +134,7 @@
   ARGS=$@
   initialize $ARGS
 
-    # Extract ISO name
+  # Extract ISO name
   if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
     echo "ISO files not found, attempting to download them."
     if [ -z "$FTP_USER" ]; then
@@ -225,7 +225,7 @@
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
         error "'msr-tools' not installed. Trying to install automatically..."
-        sudo apt install msr-tools -y
+        expectify "sudo apt install msr-tools -y"
       fi
 
       VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"
