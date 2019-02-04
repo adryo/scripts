@@ -243,12 +243,12 @@
       info "Checking virtualization: $VT_CHECK" 0
 
       if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) ]; then
-        error "'Vt-x' is not supported in this machine. Please use a different hardware." 0
+        result "'Vt-x' is not supported in this machine. Please use a different hardware." 0
         exit 1;
       fi
 
       if [ "$VT_CHECK" = "1" ]; then
-        error "'Vt-x' is supported but is currently disabled. Please enable it in the BIOS configuration and run this script again." 0
+        result "'Vt-x' is supported but is currently disabled. Please enable it in the BIOS configuration and run this script again." 0
         exit 1;
       fi
     fi
@@ -358,6 +358,13 @@
     if ! vboxmanage showvminfo "$VM" | grep "State:" | grep -i running >/dev/null; then
       result "."
       vboxmanage startvm "$VM" --type headless
+
+      if [ $? -eq 0 ]; then
+          result "Virtual Machine running..."
+      else
+          result "Unable to start Virtual Machine, probably it means that virtualization is not enabled."
+          exit 1
+      fi
     else
       result "already running."
     fi
