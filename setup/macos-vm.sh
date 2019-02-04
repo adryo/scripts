@@ -264,7 +264,7 @@
       read -s -p "Password (for $USER): " AgentLogonPassword
       echo ""
     fi
-    expect -c "set timeout -1; spawn $1; expect \"*password*\" {send \"$AgentLogonPassword\n\"; exp_continue} $2" || exit 2
+    expect -c "set timeout -1; spawn $1; expect \"password\" {send \"$AgentLogonPassword\n\"; exp_continue} $2" || exit 2
   }
 
   installVBox(){
