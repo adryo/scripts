@@ -295,9 +295,9 @@
     fi
 
     # Add user to vboxusers group
-    expectify "sudo usermod -a -G vboxusers $USER"
+    sudo usermod -a -G vboxusers $USER
 
-    expectify "sudo timeshift --create --comments 'Virtual Box installed'" #Create a restore point
+    sudo timeshift --create --comments 'Virtual Box installed' #Create a restore point
   }
 
   createVM() {
