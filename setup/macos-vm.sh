@@ -88,7 +88,25 @@
             shift 
           ;;
           --help) 
-            echo "Possible arguments:"
+            echo "Usage:"
+            echo "./mascos-vm.sh [task][task] [--options]"
+            echo ""
+            echo "Available tasks:"
+            echo "check: Check if the dependencies are installed correctly and if the hardware supports virtualization to proceed with the VM creation."
+            echo "stash: Removes a previously created VM."
+
+            echo "info: Returns the info of the VM if exists."
+            echo "snapshot: Creates an instant snapshot of the VM."
+            echo "run: Runs the VM if it is stopped."
+            echo "attach: Attaches the installation and boot loader medias ISO files. It’s used internally in the prepare command."
+            echo "detach: Detaches the installation media, letting the VM run only by the main HDD media."
+            echo "prepare: Executes the VM to prepare it for installation."
+            echo "stop: Stops the VM execution if it is running."
+            echo "create: Creates a VM if there is no one created. When using this command is recommended execute the stash one before, to make sure the deletion of any previous VM configuration."
+            echo "install: This command installs Virtual Box from the repo via command line. It may require sudo permission. Check option --logon-password for unattended execution."
+            echo "all: From a fresh installation state, this command executes a check, create and prepare commands in that order to make a clean VM configuration and proceed to prepare MacOS installation."
+            echo ""
+            echo "Available options:"
             echo "--help: Display this option descrition."
             echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
             echo "--ftp-user: Sets the ftp user's name to download the installation media if they are not present in the ubuntu host."
@@ -162,7 +180,7 @@
   readonly DST_CLOVER="$MEDIA_DIR/${VM}-Clover"
   readonly DST_VOL="/Volumes/$VM"
   readonly DST_ISO="$MEDIA_DIR/$VM.iso.cdr"
-  readonly FILE_LOG="$SCRIPTPATH/${VM}Installation.log"
+  readonly FILE_LOG="$MEDIA_DIR/${VM}Installation.log"
   ###############################################################################
   # Logging #####################################################################
   if [ ! -f "$FILE_LOG" ]; then
@@ -416,7 +434,6 @@
       shift # get rid of $1, we saved in ARG already
       case "$ARG" in
         check) runChecks ;;
-        clean) runClean ;;
         stash) vboxmanage unregistervm --delete "$VM" || true ;;
         info) echo "$(vboxmanage showvminfo $VM)" >&4 || true ;;
         snapshot) runSnapshot ;;
