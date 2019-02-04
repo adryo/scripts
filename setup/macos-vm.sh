@@ -94,7 +94,6 @@
             echo "Available tasks:"
             echo "check: Check if the dependencies are installed correctly and if the hardware supports virtualization to proceed with the VM creation."
             echo "stash: Removes a previously created VM."
-
             echo "info: Returns the info of the VM if exists."
             echo "snapshot: Creates an instant snapshot of the VM."
             echo "run: Runs the VM if it is stopped."
@@ -122,8 +121,9 @@
             echo "--vm-ssh-port: Sets the port to connect via SSH to the VM's instance while it's running. Default is 2222."
             exit 0
           ;;
+          all|check|info|run|stop|stash|snapshot|attach|detach|install|create|prepare);;
           *)
-            echo "Invalid option '$ARG'. Execute --help to see valid arguments."
+            echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
             exit 1
           ;;
           esac
