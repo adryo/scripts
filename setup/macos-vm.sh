@@ -272,8 +272,8 @@
     info "Attempting to download VirtualBox"
     expectify "wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -"
     expectify "wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -"
-    info "Downloaded VirtualBox repos asc files"
-    #expectify 'sudo echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
+    info "Downloaded VirtualBox repos asc files"    
+    sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
     expectify "sudo apt update"
     expectify "sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms"
     expectify "sudo apt update"
