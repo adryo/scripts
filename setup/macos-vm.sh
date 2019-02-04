@@ -235,15 +235,15 @@
 
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
-        echo "'msr-tools' not installed. Trying to install automatically..."
+        error "'msr-tools' not installed. Trying to install automatically..."
         sudo apt install msr-tools -y
       fi
 
       VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"
 
-      echo "Checking virtualization: $VT_CHECK"
+      info "Checking virtualization: $VT_CHECK"
 
-      if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) -o \("$VT_CHECK" = "5"\)]; then
+      if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) ]; then
         error "'Vt-x' is not supported in this machine. Please use a different hardware."
         exit 1;
       fi
@@ -269,15 +269,17 @@
   }
 
   installVBox(){
-    info "Attempting to download VirtualBox"
+    info "Attempting to obtain VirtualBox keys"
     wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-    info "Downloaded VirtualBox repos asc files"    
+    info "Obtained"
+    info "Setting VBox repo source"
     sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
     sudo apt update
     sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
     sudo apt update
     sudo apt-get install virtualbox-5.2 -y
+    
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
     EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
 
