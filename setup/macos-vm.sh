@@ -146,7 +146,7 @@
 
   # Extract ISO name
   if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
-    info "ISO files not found, attempting to download them." 100
+    echo "ISO files not found, attempting to download them."
     if [ -z "$FTP_USER" ]; then
         read -p "Apple account's email: " FTP_USER
     fi
@@ -163,9 +163,9 @@
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
 
     if [ $? -eq 0 ]; then
-        result "ISO files downloaded. Proceeding with installation..."
+        echo "ISO files downloaded. Proceeding with installation..."
     else
-        result "Unable to download media. Stoping installation."
+        echo "Unable to download media. Stoping installation."
         exit 1
     fi
   fi
