@@ -3,7 +3,7 @@ sudo apt-get install -y software-properties-common
 sudo apt-add-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
 sudo apt-add-repository -y ppa:teejee2008/ppa
 sudo apt update && sudo apt upgrade -y && sudo apt dist-upgrade -y
-sudo apt install fail2ban libgtk-3-dev timeshift msr-tools expect -y
+sudo apt install fail2ban expect -y
 
 # Create a new Jail
 sudo fail2ban-client add local
@@ -24,6 +24,8 @@ sudo fail2ban-client start local
 
 sudo fail2ban-client stop
 sudo fail2ban-client start
+
+sudo apt install libgtk-3-dev timeshift msr-tools -y
 
 sudo timeshift --create --comments "Fresh install" #Create a restore point
 sudo timeshift --list-snapshots # Lists all available snapshots
