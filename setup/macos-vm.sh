@@ -302,7 +302,7 @@
         expectify "sudo apt install msr-tools -y"
       fi
 
-      VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"
+      VT_CHECK=$(expect -c "log_user 0; spawn sudo modprobe msr && sudo rdmsr 0x3a; expect \"password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
 
       info "Checking virtualization: $VT_CHECK"
 
@@ -325,21 +325,27 @@
 
   installVBox(){
     info "Attempting to obtain VirtualBox keys..."
-    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-    wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >> oracle_vbox_2016.asc
+    expectify "sudo apt-key add oracle_vbox_2016.asc"
+    wget https://www.virtualbox.org/download/oracle_vbox.asc -O- >> oracle_vbox.asc
+    expectify "sudo apt-key add oracle_vbox.asc"
     result "Done!"
     info "Setting VBox repo source..."
-    sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
+
+expect << EOD
+    spawn sudo sh -c "echo \'\"deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib\"\' >> /etc/apt/sources.list.d/virtualbox.list" 
+    expect "Password:" {send "$AgentLogonPassword\r\n"; exp_continue}
+EOD
     result "Done!"
 
     info "Installing Virtual Box requirements..."
-    sudo apt update
-    sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
+    expectify "sudo apt update"
+    expectify "sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms"
     result "Done!"
 
     info "Installing Virtual Box package..."
-    sudo apt update
-    sudo apt-get install virtualbox-5.2 -y
+    expectify "sudo apt update"
+    expectify "sudo apt-get install virtualbox-5.2 -y"
     result "Done!"
 
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
@@ -353,7 +359,7 @@
 
       if [ $? -eq 0 ]; then
           result "Extension packs downloaded. Proceeding with installation..."
-          sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace
+          expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
       else
           result "Unable to download Extension Packs. Stoping installation."
           exit 1
@@ -361,9 +367,9 @@
     fi
 
     # Add user to vboxusers group
-    sudo usermod -a -G vboxusers $USER
+    expectify "sudo usermod -a -G vboxusers $USER"
 
-    sudo timeshift --create --comments 'Virtual Box installed' #Create a restore point
+    expectify "sudo timeshift --create --comments 'Virtual Box installed'" #Create a restore point
   }
 
   createVM() {
