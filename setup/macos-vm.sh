@@ -13,20 +13,20 @@
   VM_RES="1366x768"
   VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integer) 6, 8, 4.
   VM_CPU="2" # Can be changed using option --vm-cpu
+  VM_SNAPSHOT_TAG=""
+  readonly VM_VRAM="128"  
 
   RDP_PORT="3389" # Can be changed using option --vm-rdp-port
   SSH_PORT="2222" # Can be changed using option --vm-ssh-port
 
+  DOWNLOAD_MODE="ftp"
   FTP_USER="" # Can be set using --ftp-user
   FTP_PASSWORD="" # Can be set using --ftp-password
   FTP_HOST="" # Can be set using --ftp-host
   FTP_DIR="" # Can be set using --ftp-dir
 
   # Other variables
-  VM_SNAPSHOT_TAG=""
   PREPARATION_TIMEOUT=1800 # 30 minutes
-  DOWNLOAD_MODE="ftp"
-  readonly VM_VRAM="128"  
   readonly EXT_PACK_LICENSE="56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb"
 
   readonly PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"
@@ -176,7 +176,7 @@
   fi
 
   while [ -z "$VM" ]; do
-    read -p "Enter VM's name or press Ctrl+c to avoid the installation: " VM
+    read -p "Enter VM's name or press Ctrl+c to cancel the installation: " VM
   done
 
   readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
