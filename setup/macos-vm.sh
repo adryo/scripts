@@ -334,7 +334,7 @@
 
 expect << EOD
     spawn sudo sh -c "echo \'\"deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib\"\' >> /etc/apt/sources.list.d/virtualbox.list" 
-    expect "Password:" {send "$AgentLogonPassword\r\n"; exp_continue}
+    expect "password:" {send "$AgentLogonPassword\r\n"; exp_continue}
 EOD
     result "Done!"
 
