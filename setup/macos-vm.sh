@@ -331,11 +331,7 @@
     expectify "sudo apt-key add oracle_vbox.asc"
     result "Done!"
     info "Setting VBox repo source..."
-
-expect << EOD
-    spawn sudo sh -c "echo \'\"deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib\"\' >> /etc/apt/sources.list.d/virtualbox.list" 
-    expect "password:" {send "$AgentLogonPassword\r\n"; exp_continue}
-EOD
+    sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
     result "Done!"
 
     info "Installing Virtual Box requirements..."
