@@ -24,8 +24,8 @@
 
   # Other variables
   VM_SNAPSHOT_TAG=""
-  readonly VM_VRAM="128"
-  readonly PREPARATION_TIMEOUT=1800 # 30 minutes
+  PREPARATION_TIMEOUT=1800 # 30 minutes
+  readonly VM_VRAM="128"  
   readonly EXT_PACK_LICENSE="56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb"
 
   readonly PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"
@@ -146,7 +146,7 @@
 
   # Extract ISO name
   if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
-    echo "ISO files not found, attempting to download them."
+    echo "ISO files not found, attempting to download them..."
     if [ -z "$FTP_USER" ]; then
         read -p "Apple account's email: " FTP_USER
     fi
@@ -163,7 +163,7 @@
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
 
     if [ $? -eq 0 ]; then
-        echo "ISO files downloaded. Proceeding with installation..."
+        echo "Done! Proceeding with installation..."
     else
         echo "Unable to download media. Stoping installation."
         exit 1
@@ -204,22 +204,22 @@
 
   # Define methods ##############################################################
   debug() {
-    echo "DEBUG: $1" >&3
+    printf '%s\n' "DEBUG: $1" >&3
     log "$1"
   }
 
   error() {
-    echo "ERROR: $1" >&4
+    printf '%s\n' "ERROR: $1" >&4
     log "$1"
   }
 
   info() {
-    echo -n "$1" >&3
+    printf '%s\n' -n "$1" >&3
     log "$1"
   }
 
   result() {
-    echo "$1" >&3
+    printf '%s\n' "$1" >&3
     log "$1"
   }
 
@@ -240,7 +240,7 @@
 
       VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"
 
-      info "Checking virtualization: $VT_CHECK" 0
+      info "Checking virtualization: $VT_CHECK" 1
 
       if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) ]; then
         result "'Vt-x' is not supported in this machine. Please use a different hardware." 0
@@ -268,23 +268,23 @@
   }
 
   installVBox(){
-    info "Attempting to obtain VirtualBox keys" 0
+    info "Attempting to obtain VirtualBox keys..."
     wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
     result "Done!"
-    info "Setting VBox repo source" 0
+    info "Setting VBox repo source..."
     sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
     result "Done!"
 
-    info "Installing Virtual Box previous requirements..." 0
+    info "Installing Virtual Box previous requirements..."
     sudo apt update
     sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
     result "Done!"
 
-    info "Installing Virtual Box package..." 0
+    info "Installing Virtual Box package..."
     sudo apt update
     sudo apt-get install virtualbox-5.2 -y
-    result "Done!" 0
+    result "Done!"
 
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
     EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
