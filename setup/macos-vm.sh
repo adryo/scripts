@@ -197,7 +197,7 @@
       wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
     else 
       if [ "scp" == "$DOWNLOAD_MODE" ]; then
-        run_expect -c "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD" "\"(yes/no)?\" {send \"yes\n\"; exp_continue}"
+        run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD" "\"(yes/no)?\" {send \"yes\n\"; exp_continue}"
       fi
     fi
 
