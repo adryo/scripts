@@ -299,10 +299,10 @@
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
         error "'msr-tools' not installed. Trying to install automatically..." 0
-        expectify "sudo apt install msr-tools -y"
+        sudo apt install msr-tools -y
       fi
 
-      VT_CHECK=$(expect -c "log_user 0; spawn sudo modprobe msr && sudo rdmsr 0x3a; expect \"password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
+      VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"#$(expect -c "log_user 0; spawn sudo modprobe msr && sudo rdmsr 0x3a; expect \"password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
 
       info "Checking virtualization: $VT_CHECK"
 
@@ -335,13 +335,13 @@
     result "Done!"
 
     info "Installing Virtual Box requirements..."
-    expectify "sudo apt update"
-    expectify "sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms"
+    sudo apt update
+    sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
     result "Done!"
 
     info "Installing Virtual Box package..."
-    expectify "sudo apt update"
-    expectify "sudo apt-get install virtualbox-5.2 -y"
+    sudo apt update
+    sudo apt-get install virtualbox-5.2 -y
     result "Done!"
 
     VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
@@ -355,7 +355,7 @@
 
       if [ $? -eq 0 ]; then
           result "Extension packs downloaded. Proceeding with installation..."
-          expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+          sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace
       else
           result "Unable to download Extension Packs. Stoping installation."
           exit 1
@@ -363,9 +363,9 @@
     fi
 
     # Add user to vboxusers group
-    expectify "sudo usermod -a -G vboxusers $USER"
+    sudo usermod -a -G vboxusers $USER
 
-    expectify "sudo timeshift --create --comments 'Virtual Box installed'" #Create a restore point
+    sudo timeshift --create --comments 'Virtual Box installed' #Create a restore point
   }
 
   createVM() {
