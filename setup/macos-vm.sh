@@ -214,7 +214,7 @@
   }
 
   info() {
-    printf '%s\n' -n "$1" >&3
+    printf '%s\n' "$1" >&3
     log "$1"
   }
 
@@ -316,14 +316,14 @@
     fi
     info "Creating VM HDD '$VM_DIR/$VM.vdi' (around 5 seconds)..." 90
     if [ ! -e "$VM_DIR/$VM.vdi" ]; then
-      result "."
+      result "Done!"
       vboxmanage createhd --filename "$VM_DIR/$VM.vdi" --variant Standard --size "$VM_HDD_SIZE"
     else
       result "already exists." 0
     fi
     info "Creating VM '$VM' (around 2 seconds)..." 99
     if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
-      result "."
+      result "Done!"
       vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
       vboxmanage modifyvm "$VM" --usbxhci on --memory "$VM_RAM" --vram "$VM_VRAM" --cpus "$VM_CPU" --firmware efi --chipset ich9 --mouse usbtablet --keyboard usb    
       vboxmanage setextradata "$VM" "CustomVideoMode1" "${VM_RES}x32"    
@@ -356,7 +356,7 @@
   runVM() {
     info "Starting VM '$VM' (3 minutes in the VM)..." 100
     if ! vboxmanage showvminfo "$VM" | grep "State:" | grep -i running >/dev/null; then
-      result "."
+      result "Done!"
       vboxmanage startvm "$VM" --type headless
 
       if [ $? -eq 0 ]; then
@@ -375,11 +375,11 @@
   }
 
   attach(){
-    info "Attaching ISO files" 0
+    info "Attaching ISO files..." 0
     state="$(vboxmanage showvminfo $VM | grep 'State:')"
     if [[ $state =~ "running" ]]; then
       stopVM
-      info "Stopping VM before attach the media" 0
+      info "Stopping VM before attach the media..." 0
     fi
 
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium "$DST_CLOVER.iso"
@@ -388,11 +388,11 @@
   }
 
   detach(){
-    info "Detaching ISO files" 0
+    info "Detaching ISO files..." 0
     state="$(vboxmanage showvminfo $VM | grep 'State:')"
     if [[ $state =~ "running" ]]; then
       stopVM
-      info "Stopping VM before detach the medias" 0
+      info "Stopping VM before detach the medias..." 0
     fi
 
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none 
