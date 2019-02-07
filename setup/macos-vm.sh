@@ -25,6 +25,7 @@
   # Other variables
   VM_SNAPSHOT_TAG=""
   PREPARATION_TIMEOUT=1800 # 30 minutes
+  DOWNLOAD_MODE="ftp"
   readonly VM_VRAM="128"  
   readonly EXT_PACK_LICENSE="56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb"
 
@@ -62,6 +63,22 @@
         FTP_DIR=$1
         shift 
       ;;
+      --scp-host) 
+        FTP_HOST=$1
+        shift 
+      ;;
+      --scp-user) 
+        FTP_USER=$1
+        shift 
+      ;;
+      --scp-password) 
+        FTP_PASSWORD=$1
+        shift 
+      ;;
+      --scp-dir) 
+        FTP_DIR=$1
+        shift 
+      ;;
       --logon-password) 
         AgentLogonPassword=$1
         shift 
@@ -94,6 +111,14 @@
         VM_SNAPSHOT_TAG=$1
         shift 
       ;;
+      --preparation-timeout) 
+        PREPARATION_TIMEOUT=$(expr $1 \* 60)
+        shift 
+      ;;
+      --download-mode) 
+        DOWNLOAD_MODE=$1
+        shift 
+      ;;
       --help) 
         echo "Usage:"
         echo ""
@@ -116,10 +141,16 @@
         echo "Available options:"
         echo "--help: Display the usage tips plus tasks and options descriptions."
         echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
+        echo "--download-mode: Sets the download mode between 'ftp' or 'scp'. Use --ftp-* or --scp-* options to provide credentials and host values. Default mode is FTP."
+        echo "--preparation-timeout: Sets timeout (in minutes) to await in preparation mode. Default is (30) minutes."
         echo "--ftp-user: Sets the ftp user's name to download the installation media if they are not present in the ubuntu host."
         echo "--ftp-password: Sets the ftp user's password to download the installation media if they are not present in the ubuntu host."
         echo "--ftp-host: Sets the ftp host name to download the installation media if they are not present in the ubuntu host. Must be set in this format 'ftp://host-name/'."
         echo "--ftp-dir: Sets the ftp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Must be set in this format 'dirname/'."
+        echo "--scp-user: Sets the scp user's name to download the installation media if they are not present in the ubuntu host."
+        echo "--scp-password: Sets the scp user's password to download the installation media if they are not present in the ubuntu host."
+        echo "--scp-host: Sets the scp host name to download the installation media if they are not present in the ubuntu host. Must be set in this format 'dns.example.com' or IP address."
+        echo "--scp-dir: Sets the scp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Must be set in this format 'dirname/'."
         echo "--vm-name: Sets the name of the VM. By default VM takes the name according the installation media file name. Ex. MacOS-Mojave."
         echo "--vm-hdd-size: Sets the amount (integer) of Gigabytes to set in the VM's HDD. Default to 100 Gb."
         echo "--vm-ram-size: Sets the amount (integer) of Gigabytes to set in VM's RAM. Default to 4 Gb."
@@ -144,11 +175,13 @@
     exit 1
   fi
 
-  # Extract ISO name
-  if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
-    echo "ISO files not found, attempting to download them..."
+  run_expect() {
+    expect -c "set timeout -1; spawn $1; expect \"password\" {send \"$2\n\"; exp_continue} $3"
+  }
+
+  downloadMedias() {
     if [ -z "$FTP_USER" ]; then
-        read -p "Apple account's email: " FTP_USER
+        read -p "Username: " FTP_USER
     fi
 
     if [ -z "$FTP_PASSWORD" ]; then
@@ -157,10 +190,16 @@
     fi
 
     if [ -z "$FTP_HOST" ]; then
-        read -p "FTP server's url: " FTP_HOST
+        read -p "Server's url: " FTP_HOST
     fi
 
-    wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
+    if [ -z "$DOWNLOAD_MODE" -o \("ftp" = "$DOWNLOAD_MODE"\) ]; then
+      wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
+    else 
+      if [ "scp" == "$DOWNLOAD_MODE" ]; then
+        run_expect -c "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD" "\"(yes/no)?\" {send \"yes\n\"; exp_continue}"
+      fi
+    fi
 
     if [ $? -eq 0 ]; then
         echo "Done! Proceeding with installation..."
@@ -168,6 +207,18 @@
         echo "Unable to download media. Stoping installation."
         exit 1
     fi
+  }
+
+  # Extract ISO name
+  if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
+    echo "ISO files not found, attempting to download them..."
+
+    if [ ! -d "$MEDIA_DIR" ]; then
+      mkdir -p "$MEDIA_DIR"
+    fi
+    
+    # Request to download the ISO files.
+    downloadMedias
   fi
 
   if [ -z "$VM" ]; then
@@ -228,6 +279,15 @@
     printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
   }
 
+  expectify(){
+    if [ -z "$AgentLogonPassword" ]; then
+      read -s -p "Password (for $USER): " AgentLogonPassword
+      echo ""
+    fi
+
+    run_expect $1 $AgentLogonPassword $2
+  }
+
   runChecks() {
     info "Running checks (around 1 second)..." 0
     result "."
@@ -257,14 +317,6 @@
       error "'VBoxManage' not installed. Trying to install automatically..." 0
       installVBox || exit 2
     fi
-  }
-
-  expectify(){
-    if [ -z "$AgentLogonPassword" ]; then
-      read -s -p "Password (for $USER): " AgentLogonPassword
-      echo ""
-    fi
-    expect -c "set timeout -1; spawn $1; expect \"password\" {send \"$AgentLogonPassword\n\"; exp_continue} $2" || exit 2
   }
 
   installVBox(){
