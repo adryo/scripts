@@ -174,6 +174,12 @@
     echo "No task to execute, the script will do nothing. Please use the option --help to see usage."
     exit 1
   fi
+
+  while [ -z "$VM" ]; do
+    read -p "Enter VM's name or press Ctrl+c to avoid the installation: " VM
+  done
+
+  readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
   # Logging #####################################################################
   if [ ! -f "$FILE_LOG" ]; then
     touch $FILE_LOG
@@ -265,13 +271,6 @@
     downloadMedias
   fi
 
-  if [ -z "$VM" ]; then
-    name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
-    name=${name##*/}
-    name=${name%.*.*};
-    VM="$name"
-  fi
-
   echo "Selected profile for setup: "
   echo "* VM's name: $VM"
   echo "* HDD Size: $((VM_HDD_SIZE / 1024)) Gb"
@@ -280,12 +279,17 @@
   echo "* RDP port: $RDP_PORT"
   echo "* SSH port: $SSH_PORT"
 
+  name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
+  name=${name##*/}
+  name=${name%.*.*};
+
+  readonly ISO_NAME="$name"
+
   readonly DST_DIR="$HOME/VirtualBox VMs/"
   readonly VM_DIR="$DST_DIR$VM"
-  readonly DST_CLOVER="${MEDIA_DIR}${VM}-Clover"
   readonly DST_VOL="/Volumes/$VM"
-  readonly DST_ISO="${MEDIA_DIR}$VM.iso.cdr"
-  readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
+  readonly DST_CLOVER="${MEDIA_DIR}${ISO_NAME}-Clover"
+  readonly DST_ISO="${MEDIA_DIR}$ISO_NAME.iso.cdr"
   ###############################################################################
 
   runChecks() {
