@@ -295,12 +295,12 @@
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
         error "'msr-tools' not installed. Trying to install automatically..." 0
-        sudo apt install msr-tools -y
+        expectify "sudo apt install msr-tools -y"
       fi
 
       VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"
 
-      info "Checking virtualization: $VT_CHECK" 1
+      info "Checking virtualization: $VT_CHECK"
 
       if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) ]; then
         result "'Vt-x' is not supported in this machine. Please use a different hardware." 0
