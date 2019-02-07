@@ -174,9 +174,53 @@
     echo "No task to execute, the script will do nothing. Please use the option --help to see usage."
     exit 1
   fi
+  # Logging #####################################################################
+  if [ ! -f "$FILE_LOG" ]; then
+    touch $FILE_LOG
+  fi
+  exec 3>&1
+  exec 4>&2
+  exec 1>>"$FILE_LOG"
+  exec 2>&1
+  ###############################################################################
+
+  # Define methods ##############################################################
+  debug() {
+    printf '%s\n' "DEBUG: $1" >&3
+    log "$1"
+  }
+
+  error() {
+    printf '%s\n' "ERROR: $1" >&4
+    log "$1"
+  }
+
+  info() {
+    printf '%s\n' "$1" >&3
+    log "$1"
+  }
+
+  result() {
+    printf '%s\n' "$1" >&3
+    log "$1"
+  }
+
+  log() {
+    datestring="$(date +'%Y-%m-%d %H:%M:%S')"
+    printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
+  }
 
   run_expect() {
     expect -c "set timeout -1; spawn $1; expect \"password\" {send \"$2\n\"; exp_continue} $3"
+  }
+
+  expectify(){
+    if [ -z "$AgentLogonPassword" ]; then
+      read -s -p "Password (for $USER): " AgentLogonPassword
+      echo ""
+    fi
+
+    run_expect $1 $AgentLogonPassword $2
   }
 
   downloadMedias() {
@@ -243,50 +287,6 @@
   readonly DST_ISO="${MEDIA_DIR}$VM.iso.cdr"
   readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
   ###############################################################################
-  # Logging #####################################################################
-  if [ ! -f "$FILE_LOG" ]; then
-    touch $FILE_LOG
-  fi
-  exec 3>&1
-  exec 4>&2
-  exec 1>>"$FILE_LOG"
-  exec 2>&1
-  ###############################################################################
-
-  # Define methods ##############################################################
-  debug() {
-    printf '%s\n' "DEBUG: $1" >&3
-    log "$1"
-  }
-
-  error() {
-    printf '%s\n' "ERROR: $1" >&4
-    log "$1"
-  }
-
-  info() {
-    printf '%s\n' "$1" >&3
-    log "$1"
-  }
-
-  result() {
-    printf '%s\n' "$1" >&3
-    log "$1"
-  }
-
-  log() {
-    datestring="$(date +'%Y-%m-%d %H:%M:%S')"
-    printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
-  }
-
-  expectify(){
-    if [ -z "$AgentLogonPassword" ]; then
-      read -s -p "Password (for $USER): " AgentLogonPassword
-      echo ""
-    fi
-
-    run_expect $1 $AgentLogonPassword $2
-  }
 
   runChecks() {
     info "Running checks (around 1 second)..." 0
@@ -328,7 +328,7 @@
     sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
     result "Done!"
 
-    info "Installing Virtual Box previous requirements..."
+    info "Installing Virtual Box requirements..."
     sudo apt update
     sudo apt-get -y install gcc make linux-headers-$(uname -r) dkms
     result "Done!"
