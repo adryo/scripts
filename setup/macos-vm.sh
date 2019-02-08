@@ -294,7 +294,6 @@
 
   runChecks() {
     info "Running checks (around 1 second)..." 0
-    result "."
 
     if [[ "$PLATFORM" == 'Linux' ]]; then
       if ! type modprobe >/dev/null 2>&1; then
@@ -318,17 +317,17 @@
     fi
 
     if ! type vboxmanage >/dev/null 2>&1; then
-      error "'VBoxManage' not installed. Trying to install automatically..." 0
+      result "'VBoxManage' not installed. Trying to install automatically..." 0
       installVBox || exit 2
     fi
   }
 
   installVBox(){
     info "Attempting to obtain VirtualBox keys..."
-    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >> oracle_vbox_2016.asc
-    expectify "sudo apt-key add oracle_vbox_2016.asc"
-    wget https://www.virtualbox.org/download/oracle_vbox.asc -O- >> oracle_vbox.asc
-    expectify "sudo apt-key add oracle_vbox.asc"
+    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+    #expectify "sudo apt-key add oracle_vbox_2016.asc"
+    wget https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+    #expectify "sudo apt-key add oracle_vbox.asc"
     result "Done!"
     info "Setting VBox repo source..."
     sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
