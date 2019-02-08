@@ -28,7 +28,7 @@
   # Other variables
   PREPARATION_TIMEOUT=1800 # 30 minutes
   readonly EXT_PACK_LICENSE="56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb"
-
+  readonly IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
   readonly PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"
   readonly SCRIPTPATH="$(
     cd "$(dirname "$0")" || exit
@@ -466,7 +466,7 @@
     runVM
 
     # While the VM installer is prepared, check the status of the VM until it shutdowns.
-    echo "Prepare the installation. DO NOT end this script execution, it's waiting for the guest to be prepared and will end automatically." >&4
+    echo "Prepare the installation. DO NOT end this script execution. Connect via RDP to '$IP_ADDRESS:$RDP_PORT' and execute the '/Volume/NO\ NAME/prepare.sh' script to be prepared, then this script will continue automatically." >&4
     state="running"
     SECONDS=0
 
