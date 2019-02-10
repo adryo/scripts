@@ -66,6 +66,9 @@ if [ "$CONFIGURE_SYSTEM" == "1" ]; then
     fi
 fi
 
+# Install Git Flow extension
+brew install git-flow
+
 # Install React stuff
 npm install -g expo-cli
 
