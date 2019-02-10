@@ -18,4 +18,4 @@ bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/create-ts-li
 
 bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/ubuntu-server-18.04.1.sh)
 
-bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) [$LogonPassword] [$AppleUser] [$ApplePassword] [$AzureHost] [$PAT] [$PoolName]
+bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $AppleUser --apple-password $ApplePassword
