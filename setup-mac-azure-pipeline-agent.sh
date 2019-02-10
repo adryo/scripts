@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 # Global Variables
+PLATFORM=`uname`
 AgentLogonPassword=""
 APPLE_USER=""
 APPLE_PASSWORD=""
 
 # TFS Variables
-AGENT_NAME="VM-MacOS-Mojave01"
+AGENT_NAME="VM-$PLATFORM-Mojave01"
 CONFIGURE_AZURE_PIPELINE_AGENT=1
 SERVER_URL=""
 TOKEN=""
@@ -196,7 +197,7 @@ if [ -z "$APPLE_PASSWORD" ]; then
   read -s -p "Password (for $APPLE_USER): " APPLE_PASSWORD
   echo ""
 fi
-# Install Xcode 10.1, 10.0, 9.4
+# Install Xcode 10.1
 for i in "${XCODE_VERSIONS[@]}"; do
   expectify "xcversion install $i" "\"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWORD\n\"; exp_continue}"
 done
