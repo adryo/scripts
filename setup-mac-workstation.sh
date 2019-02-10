@@ -51,6 +51,7 @@ if [ -z "$APPLE_PASSWORD" ]; then
 fi
 
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
+    echo "Requested to configure the system first!"
     # Setup machine
     bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --skip-agent-config --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD || exit 1
 
