@@ -45,14 +45,14 @@ if [ -z "$APPLE_USER" ]; then
     read -p "Apple account's email: " APPLE_USER
 fi
 
-if [ -z "$APPLE_PASSWD" ]; then
-    read -s -p "Password (for $APPLE_USER): " APPLE_PASSWD
+if [ -z "$APPLE_PASSWORD" ]; then
+    read -s -p "Password (for $APPLE_USER): " APPLE_PASSWORD
     echo ""
 fi
 
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
     # Setup machine
-    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWD || exit 1
+    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD || exit 1
 
     if [ $? -eq 0 ]; then
       echo "System setup successfully. Proceeding with workstation config..."
