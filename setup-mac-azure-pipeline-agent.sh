@@ -196,6 +196,14 @@ echo "export ANDROID_NDK_HOME=/usr/local/share/android-ndk" >> ~/.bash_profile
 echo "export ANDROID_HOME=\$ANDROID_SDK_ROOT" >> ~/.bash_profile
 echo "export PATH=\$PATH:\$ANDROID_SDK_ROOT/emulator:\$ANDROID_SDK_ROOT/tools/bin:\$ANDROID_SDK_ROOT/platform-tools" >> ~/.bash_profile
 
+# SymLink sdk for Android Studio
+mkdir -p ~/Library/Android
+ln -s /usr/local/share/android-sdk ~/Library/Android
+mv ~/Library/Android/android-sdk ~/Library/Android/sdk
+
+ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
+mv ~/Library/Android/android-sdk/android-ndk /usr/local/share/android-sdk/ndk-bundle
+
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
