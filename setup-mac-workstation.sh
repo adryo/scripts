@@ -1,6 +1,9 @@
 
-# Install React stuff
+# Setup machine
 
+bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $AppleUser --apple-password $ApplePassword
+
+# Install React stuff
 npm install -g expo-cli
 
 brew install watchman
