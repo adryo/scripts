@@ -1,7 +1,67 @@
+LogonPassword=""
+APPLE_USER=""
+APPLE_PASSWORD=""
+CONFIGURE_AZURE_PIPELINE_AGENT=1
 
-# Setup machine
+# This function is used to initialize the variables according to the supplied values through the scripts arguments
+while [ "$#" -ne 0 ]; do
+  ARG="$1"
+  shift # get rid of $1, we saved in ARG already
+  case "$ARG" in
+  --logon-password) 
+    LogonPassword=$1
+    shift 
+  ;;
+  --apple-account) 
+    APPLE_USER=$1
+    shift 
+  ;;
+  --apple-password) 
+    APPLE_PASSWORD=$1
+    shift 
+  ;;
+  --skip-agent-config) 
+    CONFIGURE_AZURE_PIPELINE_AGENT=0
+  ;;
+  --help) 
+    echo "Usage:"
+    echo ""
+    echo "./setup-mac-azure-pipeline-agent.sh [--options]"
+    exit 0
+  ;;
+  *)
+    echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
+    exit 1
+  ;;
+  esac
+done
 
-bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $AppleUser --apple-password $ApplePassword
+if [ -z "$LogonPassword" ]; then
+    read -s -p "Password (for $USER): " LogonPassword
+    echo ""
+fi
+
+if [ -z "$APPLE_USER" ]; then
+    read -p "Apple account's email: " APPLE_USER
+fi
+
+if [ -z "$APPLE_PASSWD" ]; then
+    read -s -p "Password (for $APPLE_USER): " APPLE_PASSWD
+    echo ""
+fi
+
+if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
+    # Setup machine
+    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWD || exit 1
+
+    if [ $? -eq 0 ]; then
+      echo "System setup successfully. Proceeding with workstation config..."
+      sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace
+    else
+      echo "The system wasn't configured. Stoping installation."
+      exit 1
+    fi
+fi
 
 # Install React stuff
 npm install -g expo-cli
