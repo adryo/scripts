@@ -31,6 +31,9 @@ if ! type flutter >/dev/null 2>&1; then
 
     pod setup
     
+    expect -c "set timeout -1; spawn flutter doctor --android-licenses; expect \"(y/N)\" {send: \"y\n\"; exp_continue}"
+    brew install ios-deploy
+    
     echo "Done!"
 fi
 
