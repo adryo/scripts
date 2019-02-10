@@ -27,7 +27,7 @@ XCODE_VERSIONS=(10.1)
         shift 
       ;;
       --apple-password) 
-        APPLE_PASSWORD=$1
+        APPLE_PASSWD=$1
         shift 
       ;;
       --skip-agent-config) 
