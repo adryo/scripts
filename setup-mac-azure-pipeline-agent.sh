@@ -1,14 +1,79 @@
 #!/usr/bin/env bash
 
 # Global Variables
-AgentLogonPassword=$1
-APPLE_USER=$2
-APPLE_PASSWD=$3
-SERVER_URL=$4
-TOKEN=$5
-POOL=$6
-TIMEZONE=$7
-readonly XCODE_VERSIONS=(9.4 10.0 10.1)
+AgentLogonPassword=""
+APPLE_USER=""
+APPLE_PASSWD=""
+# TFS Variables
+AGENT_NAME="VM-MacOS-Mojave01"
+CONFIGURE_AZURE_PIPELINE_AGENT=1
+SERVER_URL=""
+TOKEN=""
+POOL=""
+TIMEZONE=""
+XCODE_VERSIONS=(10.1)
+
+# This function is used to initialize the variables according to the supplied values through the scripts arguments
+  while [ "$#" -ne 0 ]; do
+      ARG="$1"
+      shift # get rid of $1, we saved in ARG already
+      case "$ARG" in
+      --logon-password) 
+        AgentLogonPassword=$1
+        shift 
+      ;;
+      --apple-account) 
+        APPLE_USER=$1
+        shift 
+      ;;
+      --apple-password) 
+        APPLE_PASSWORD=$1
+        shift 
+      ;;
+      --skip-agent-config) 
+        CONFIGURE_AZURE_PIPELINE_AGENT=0
+      ;;
+      --agent-name) 
+        AGENT_NAME=$1
+        shift 
+      ;;
+      --server-url) 
+        SERVER_URL=$1
+        shift 
+      ;;
+      --token) 
+        TOKEN=$1
+        shift 
+      ;;
+      --pool-name) 
+        POOL=$1
+        shift 
+      ;;
+      --timezone) 
+        TIMEZONE=$1
+        shift 
+      ;;
+      --install-xcode) 
+      	IN="$(echo -e "$1" | tr -d '[:space:]')"
+      	IFS=';' read -ra VERS <<< "$IN"
+	for v in "${VERS[@]}"; do
+	    # process "$v"
+	    XCODE_VERSIONS=("$v" "${XCODE_VERSIONS[@]}")
+	done
+	shift
+      ;;
+      --help) 
+        echo "Usage:"
+        echo ""
+        echo "./setup-mac-azure-pipeline-agent.sh [--options]"
+        exit 0
+      ;;
+      *)
+        echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
+        exit 1
+      ;;
+      esac
+  done
 
 if [ -z "$AgentLogonPassword" ]; then
     read -s -p "Password (for $USER): " AgentLogonPassword
@@ -44,9 +109,6 @@ fi
 # Expect variables
 readonly TCL_VERSION="8.6.9"
 readonly EXPECT_VERSION="5.45.4"
-
-# TFS Variables
-readonly AGENT_NAME="VM-MacOS-Mojave01"
 
 # VSTS Agent Variables
 readonly VSTS_AGENT_VERSION="2.144.2"
@@ -254,6 +316,7 @@ expectify "brew install git"
 expectify "brew install git-lfs"
 
 #Step 3: Creating an agent
+if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
 readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
 mkdir ~/VSTSAgents
 cd ~/VSTSAgents
@@ -278,3 +341,4 @@ printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/VSTSAgents/agent01/runsvc.sh
 
 # Start the service
 ~/VSTSAgents/agent01/svc.sh start
+fi
