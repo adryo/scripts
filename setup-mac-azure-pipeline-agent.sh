@@ -8,7 +8,7 @@ SERVER_URL=$4
 TOKEN=$5
 POOL=$6
 TIMEZONE=$7
-readonly XCODE_VERSIONS=(10.1)
+readonly XCODE_VERSIONS=(9.4 10.0 10.1)
 
 if [ -z "$AgentLogonPassword" ]; then
     read -s -p "Password (for $USER): " AgentLogonPassword
@@ -244,9 +244,6 @@ ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
 #Step 2: Install GIT
 expectify "brew install git"
 expectify "brew install git-lfs"
-
-echo "Ready to go!"
-exit 0
 
 #Step 3: Creating an agent
 readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
