@@ -52,7 +52,7 @@ fi
 
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
     # Setup machine
-    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD || exit 1
+    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --skip-agent-config --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD || exit 1
 
     if [ $? -eq 0 ]; then
       echo "System setup successfully. Proceeding with workstation config..."
