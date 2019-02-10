@@ -1,7 +1,7 @@
 LogonPassword=""
 APPLE_USER=""
 APPLE_PASSWORD=""
-CONFIGURE_AZURE_PIPELINE_AGENT=1
+CONFIGURE_SYSTEM=1
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
 while [ "$#" -ne 0 ]; do
@@ -20,8 +20,8 @@ while [ "$#" -ne 0 ]; do
     APPLE_PASSWORD=$1
     shift 
   ;;
-  --skip-agent-config) 
-    CONFIGURE_AZURE_PIPELINE_AGENT=0
+  --skip-sys-config) 
+    CONFIGURE_SYSTEM=0
   ;;
   --help) 
     echo "Usage:"
@@ -50,14 +50,13 @@ if [ -z "$APPLE_PASSWORD" ]; then
     echo ""
 fi
 
-if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
+if [ "$CONFIGURE_SYSTEM" == "1" ]; then
     echo "Requested to configure the system first!"
     # Setup machine
     bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --skip-agent-config --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD || exit 1
 
     if [ $? -eq 0 ]; then
       echo "System setup successfully. Proceeding with workstation config..."
-      sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace
     else
       echo "The system wasn't configured. Stoping installation."
       exit 1
