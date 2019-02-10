@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+# Global Variables
 LogonPassword=""
 APPLE_USER=""
 APPLE_PASSWORD=""
