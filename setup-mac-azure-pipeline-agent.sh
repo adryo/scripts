@@ -88,24 +88,6 @@ if [ -z "$APPLE_PASSWORD" ]; then
     read -s -p "Password (for $APPLE_USER): " APPLE_PASSWORD
     echo ""
 fi
-
-if [ -z "$SERVER_URL" ]; then
-    read -p "TFS server's url: " SERVER_URL
-fi
-
-if [ -z "$TOKEN" ]; then
-    read -s -p "Insert PAT: " TOKEN
-    echo ""
-fi
-
-if [ -z "$POOL" ]; then
-    POOL="default"
-fi
-
-if [ -z "$TIMEZONE" ]; then
-    TIMEZONE="Europe/Paris"
-fi
-
 # Expect variables
 readonly TCL_VERSION="8.6.9"
 readonly EXPECT_VERSION="5.45.4"
@@ -317,14 +299,35 @@ expectify "brew install git-lfs"
 
 #Step 3: Creating an agent
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
+	if [ -z "$SERVER_URL" ]; then
+	    read -p "TFS server's url: " SERVER_URL
+	fi
+
+	if [ -z "$TOKEN" ]; then
+	    read -s -p "Insert PAT: " TOKEN
+	    echo ""
+	fi
+
+	if [ -z "$POOL" ]; then
+	    POOL="default"
+	fi
+
+	if [ -z "$TIMEZONE" ]; then
+	    TIMEZONE="Europe/Paris"
+	fi
+	
+	echo "Downloading Azure pipeline agent v${VSTS_AGENT_VERSION}..."
 	readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
 	mkdir ~/VSTSAgents
 	cd ~/VSTSAgents
 
 	curl https://vstsagentpackage.azureedge.net/agent/$VSTS_AGENT_VERSION/$VSTS_AGENT_TARGZ_FILE --output $VSTS_AGENT_TARGZ_FILE
+	echo "Done!"
+	echo "Installing the agent..."
 	mkdir ~/VSTSAgents/agent01 && cd ~/VSTSAgents/agent01
 	tar xzf ~/VSTSAgents/$VSTS_AGENT_TARGZ_FILE
-
+	echo "Done!"
+	echo "Configuring the agent to be used..."
 	cd ~/VSTSAgents/agent01
 	#Step 4: Configuring this agent at TFS server
 	# Set the timezone before configure
@@ -338,7 +341,7 @@ if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
 
 	# Link the .bash_profile file to load all ENV and configurations
 	printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/VSTSAgents/agent01/runsvc.sh
-
+	echo "Done!"
 	# Start the service
 	~/VSTSAgents/agent01/svc.sh start
 fi
