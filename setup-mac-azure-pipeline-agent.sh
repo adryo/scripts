@@ -317,28 +317,28 @@ expectify "brew install git-lfs"
 
 #Step 3: Creating an agent
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
-readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
-mkdir ~/VSTSAgents
-cd ~/VSTSAgents
+	readonly VSTS_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${VSTS_AGENT_VERSION}.tar.gz"
+	mkdir ~/VSTSAgents
+	cd ~/VSTSAgents
 
-curl https://vstsagentpackage.azureedge.net/agent/$VSTS_AGENT_VERSION/$VSTS_AGENT_TARGZ_FILE --output $VSTS_AGENT_TARGZ_FILE
-mkdir ~/VSTSAgents/agent01 && cd ~/VSTSAgents/agent01
-tar xzf ~/VSTSAgents/$VSTS_AGENT_TARGZ_FILE
+	curl https://vstsagentpackage.azureedge.net/agent/$VSTS_AGENT_VERSION/$VSTS_AGENT_TARGZ_FILE --output $VSTS_AGENT_TARGZ_FILE
+	mkdir ~/VSTSAgents/agent01 && cd ~/VSTSAgents/agent01
+	tar xzf ~/VSTSAgents/$VSTS_AGENT_TARGZ_FILE
 
-cd ~/VSTSAgents/agent01
-#Step 4: Configuring this agent at TFS server
-# Set the timezone before configure
-expectify "sudo systemsetup -settimezone $TIMEZONE"
+	cd ~/VSTSAgents/agent01
+	#Step 4: Configuring this agent at TFS server
+	# Set the timezone before configure
+	expectify "sudo systemsetup -settimezone $TIMEZONE"
 
-#The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens) 
-#The Agent Pool should be Default for production or TestAgents for testing.
-#The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
-~/VSTSAgents/agent01/config.sh --unattended  --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
-~/VSTSAgents/agent01/svc.sh install
+	#The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens) 
+	#The Agent Pool should be Default for production or TestAgents for testing.
+	#The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
+	~/VSTSAgents/agent01/config.sh --unattended  --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
+	~/VSTSAgents/agent01/svc.sh install
 
-# Link the .bash_profile file to load all ENV and configurations
-printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/VSTSAgents/agent01/runsvc.sh
+	# Link the .bash_profile file to load all ENV and configurations
+	printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/VSTSAgents/agent01/runsvc.sh
 
-# Start the service
-~/VSTSAgents/agent01/svc.sh start
+	# Start the service
+	~/VSTSAgents/agent01/svc.sh start
 fi
