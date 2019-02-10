@@ -53,7 +53,7 @@ fi
 if [ "$CONFIGURE_SYSTEM" == "1" ]; then
     echo "Requested to configure the system first!"
     # Setup machine
-    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --skip-agent-config --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD || exit 1
+    bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) --logon-password $LogonPassword --apple-account $APPLE_USER --apple-password $APPLE_PASSWORD --skip-agent-config || exit 1
 
     if [ $? -eq 0 ]; then
       echo "System setup successfully. Proceeding with workstation config..."
