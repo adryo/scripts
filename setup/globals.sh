@@ -102,11 +102,25 @@ run_expect() {
     check_install_expect
 
     if [ $? -eq 0 ]; then
-        expect -c "set timeout -1; exp_internal 1; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
+        expect -c "set timeout -1; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
     else
         echo "Unable to use expect."
         exit 1
     fi
+}
+
+# Returns a digit resulting of the supplied command and password.
+expect_digit(){
+    check_install_expect
+
+    if [ $? -eq 0 ]; then
+        return $(expect -c "set timeout -1; log_user 0; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
+    else
+        echo "Unable to use expect."
+        exit 1
+    fi
+    
+    return 0
 }
 
 # Runs expect providing the CURRENT_LOGON_PASSWORD value as password.
