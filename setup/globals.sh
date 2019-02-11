@@ -3,8 +3,11 @@
 # Variable to store the credential to be used in expect.
 CURRENT_LOGON_PASSWORD=""
 
+# Globals
+GLOBAL_PLATFORM=`uname`
+
 run_expect() {
-  expect -c "set timeout -1; spawn $1; expect \"password*\" {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} $3"
+  expect -c "set timeout -1; spawn $1; expect \"*[pP]assword*\" {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} $3"
 }
 
 expectify(){
