@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+# Import globals
+#source /dev/stdin <<< "$(curl --insecure https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
-# Variable to store the credential to be used in expect.
-CURRENT_LOGON_PASSWORD=""
+# Global Variables
+CURRENT_LOGON_PASSWORD="5526"
 
 # Globals
 GLOBAL_PLATFORM_OS="$(uname -s)"
@@ -67,13 +69,11 @@ install_expect() {
 
 # Check if expect is installed
 check_expect() {
-    echo "Checking for expect installation..."
     if ! type expect >/dev/null 2>&1; then
-        echo "Not installed!"
+        printf '%s\n' "Expect not installed!"
         return 1
     fi
 
-    echo "Installed!"
     return 0
 }
 
@@ -112,7 +112,6 @@ run_expect() {
 # Returns a digit resulting of the supplied command and password.
 expect_digit(){
     check_install_expect
-
     if [ $? -eq 0 ]; then
         return $(expect -c "set timeout -1; log_user 0; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
     else
