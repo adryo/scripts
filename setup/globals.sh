@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
-# Import globals
-#source /dev/stdin <<< "$(curl --insecure https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
-
-# Global Variables
-CURRENT_LOGON_PASSWORD="5526"
+# Variables
+CURRENT_LOGON_PASSWORD=""
 
 # Globals
-GLOBAL_PLATFORM_OS="$(uname -s)"
+readonly GLOBAL_PLATFORM_OS="$(uname -s)"
 
 # Installs expect if is not found in the environment
 install_expect() {
     echo "Requested expect installtion..."
     if [ "$GLOBAL_PLATFORM_OS" == "Darwin" ]; then
         # Expect variables
-        readonly TCL_VERSION="8.6.9"
-        readonly EXPECT_VERSION="5.45.4"
+        local TCL_VERSION="8.6.9"
+        local EXPECT_VERSION="5.45.4"
         # Download and install TCL
-        readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
-        readonly TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
+        local TCL_FULL_NAME="tcl${TCL_VERSION}"
+        local TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
 
         echo "Downloading dependency $TCL_PKG..."
         # curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
@@ -34,8 +31,8 @@ install_expect() {
         echo "Done!"
 
         # Download and install Expect
-        readonly EXPECT_FULL_NAME="expect${EXPECT_VERSION}"
-        readonly EXPECT_PKG="${EXPECT_FULL_NAME}.tar.gz"
+        local EXPECT_FULL_NAME="expect${EXPECT_VERSION}"
+        local EXPECT_PKG="${EXPECT_FULL_NAME}.tar.gz"
         echo "Downloading expect $EXPECT_PKG..."
         curl -sL -O https://downloads.sourceforge.net/expect/$EXPECT_PKG --output $EXPECT_PKG
         echo "Done!"
