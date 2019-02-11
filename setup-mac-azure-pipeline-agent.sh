@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
+# Import globals
+source /dev/stdin <<<"$(curl --insecure https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+
 # Global Variables
-PLATFORM=`uname`
-AgentLogonPassword=""
 APPLE_USER=""
 APPLE_PASSWORD=""
 
 # TFS Variables
-AGENT_NAME="VM-$PLATFORM-Mojave01"
+AGENT_NAME="VM-$GLOBAL_PLATFORM_OS-Mojave01"
 CONFIGURE_AZURE_PIPELINE_AGENT=1
 SERVER_URL=""
 TOKEN=""
@@ -21,7 +22,7 @@ while [ "$#" -ne 0 ]; do
   shift # get rid of $1, we saved in ARG already
   case "$ARG" in
   --logon-password)
-    AgentLogonPassword=$1
+    CURRENT_LOGON_PASSWORD=$1
     shift
     ;;
   --apple-account)
@@ -77,10 +78,6 @@ while [ "$#" -ne 0 ]; do
   esac
 done
 
-# Expect variables
-readonly TCL_VERSION="8.6.9"
-readonly EXPECT_VERSION="5.45.4"
-
 # VSTS Agent Variables
 readonly AZURE_AGENT_VERSION="2.144.2"
 
@@ -122,50 +119,6 @@ if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1; then
   fi
 else
   install_xcodeclt "Command Line Tools are not installed" || exit 2
-fi
-
-expectify() {
-  if [ -z "$AgentLogonPassword" ]; then
-    read -s -p "Password (for $USER): " AgentLogonPassword
-    echo ""
-  fi
-  expect -c "set timeout -1; spawn $1; expect \"Password:*\" {send \"$AgentLogonPassword\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} $2"
-}
-
-install_expect() {
-  # Download and install TCL
-  readonly TCL_FULL_NAME="tcl${TCL_VERSION}"
-  readonly TCL_PKG="${TCL_FULL_NAME}-src.tar.gz"
-  # curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
-  curl -sL -O http://downloads.sourceforge.net/tcl/$TCL_PKG --output $TCL_PKG
-  tar -xzf $TCL_PKG
-
-  # Compilation and installation
-  make -C $TCL_FULL_NAME/macosx
-  make -C $TCL_FULL_NAME/macosx install INSTALL_ROOT="${HOME}/"
-
-  # Download and install Expect
-  readonly EXPECT_FULL_NAME="expect${EXPECT_VERSION}"
-  readonly EXPECT_PKG="${EXPECT_FULL_NAME}.tar.gz"
-  curl -sL -O https://downloads.sourceforge.net/expect/$EXPECT_PKG --output $EXPECT_PKG
-  tar -xzf $EXPECT_PKG
-
-  # Install
-  $EXPECT_FULL_NAME/configure --prefix=/usr \
-    --with-tcl=/usr/lib \
-    --enable-shared \
-    --mandir=/usr/share/man \
-    --with-tclinclude=/usr/include &&
-    make
-
-  # Now, as the root user:
-  #sudo make $EXPECT_FULL_NAME/install &&
-  expectify "sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib"
-}
-
-if ! type expect >/dev/null 2>&1; then
-  echo "'Expect' not installed. Trying to install it automatically..."
-  install_expect || exit 2
 fi
 
 if ! type brew >/dev/null 2>&1; then
@@ -214,7 +167,7 @@ brew tap caskroom/versions
 expectify "brew cask install java8"
 
 #Step 2: Add JAVA_HOME into env
-echo "export JAVA_HOME=$(/usr/libexec/java_home)" >>~/.bash_profile
+echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
 
 ##Android SDK##
 #Step 1: Install SDK
@@ -238,10 +191,10 @@ done <"out.txt"
 sdkmanager --update
 
 #Step 3: Configure env
-echo "export ANDROID_SDK_ROOT=/usr/local/share/android-sdk" >>~/.bash_profile
-echo "export ANDROID_NDK_HOME=/usr/local/share/android-ndk" >>~/.bash_profile
-echo "export ANDROID_HOME=\$ANDROID_SDK_ROOT" >>~/.bash_profile
-echo "export PATH=\$PATH:\$ANDROID_SDK_ROOT/emulator:\$ANDROID_SDK_ROOT/tools/bin:\$ANDROID_SDK_ROOT/platform-tools" >>~/.bash_profile
+echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
+echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
+echo 'export ANDROID_HOME="$ANDROID_SDK_ROOT"' >>~/.bash_profile
+echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools"' >>~/.bash_profile
 
 # SymLink sdk for Android Studio
 mkdir -p ~/Library/Android
@@ -265,9 +218,9 @@ echo 'export CPPFLAGS="-I/usr/local/opt/icu4c/include"' >>~/.bash_profile
 # Alternatively using Fastlane
 expectify "sudo gem install fastlane"
 echo 'export PATH="$HOME/.fastlane/bin:$PATH"' >>~/.bash_profile
-echo "export LC_ALL=en_US.UTF-8" >>~/.bash_profile
-echo "export LANG=en_US.UTF-8" >>~/.bash_profile
-echo "export LANGUAGE=en_US.UTF-8" >>~/.bash_profile
+echo 'export LC_ALL="en_US.UTF-8"' >>~/.bash_profile
+echo 'export LANG="en_US.UTF-8"' >>~/.bash_profile
+echo 'export LANGUAGE="en_US.UTF-8"' >>~/.bash_profile
 
 # Register xcode-select for remotely use
 rule="$USER  ALL=NOPASSWD:/usr/bin/xcode-select"
