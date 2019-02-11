@@ -7,7 +7,7 @@ CURRENT_LOGON_PASSWORD=""
 GLOBAL_PLATFORM=`uname`
 
 run_expect() {
-  expect -c "set timeout -1; exp_internal 1; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} $3"
+  expect -c "set timeout -1; exp_internal 1; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
 }
 
 expectify(){
