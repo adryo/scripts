@@ -18,6 +18,7 @@ for arg do
     continue
   fi
   if [ "$arg" = "--logon-password" ]; then
+    echo "Argument '--logon-password' removed from the argument list."
     found_logon_password=1
     continue
   fi
