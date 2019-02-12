@@ -11,8 +11,6 @@
 source /dev/stdin <<< "$(curl --insecure https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
 # Global Variables
-CURRENT_LOGON_PASSWORD=""
-
 VM="" # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
 VM_HDD_SIZE="102400" # 100 Gb Can be changed using option --vm-hdd-size in Gb, ex. (integer) 100, 120, 80.
 VM_RES="1366x768"
@@ -80,10 +78,6 @@ while [ "$#" -ne 0 ]; do
   ;;
   --scp-dir) 
     FTP_DIR=$1
-    shift 
-  ;;
-  --logon-password) 
-    CURRENT_LOGON_PASSWORD=$1
     shift 
   ;;
   --vm-name) 
