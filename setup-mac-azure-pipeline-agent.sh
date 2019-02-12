@@ -68,7 +68,20 @@ while [ "$#" -ne 0 ]; do
   --help)
     echo "Usage:"
     echo ""
-    echo "./setup-mac-azure-pipeline-agent.sh [--options]"
+    echo "./script.sh [--options]"
+    echo ""
+    echo "Available options:"
+    echo "--help: Display the usage tips plus tasks and options descriptions."
+    echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
+    echo "--apple-account: A valid developer account email to download and install Xcode."
+    echo "--apple-password: The matching password to handle authentication through apple services."
+    echo "--skip-agent-config: Runs the installation of the development tools but don't install any azure agent."
+    echo "--agent-name: Sets the name of the agent in the azure platform's pool. Default is 'VM-Darwin-Mojave01'."
+    echo "--server-url: The tfs or azure server's url."
+    echo "--token: A valid PAT to use during agent configuration."
+    echo "--pool-name: The pool where this agent will belong. Default is 'default'."
+    echo "--timezone: The timezone to configure the agent with. Default is 'Europe/Paris'."
+    echo "--install-xcode: By default this script will install always Xcode 10.1, but other versions can be set to be automatically installed too. Set the version number separated by comma, ex: '--install-xcode 9.4,10.0'."
     exit 0
     ;;
   *)
