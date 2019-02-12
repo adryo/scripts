@@ -12,12 +12,12 @@ readonly regex_password="*?assword*:*"
 found_logon_password=0
 for arg do
   shift
-  if [ ! -z $found_logon_password ]; then
+  if [ "$found_logon_password" == "1" ]; then
     CURRENT_LOGON_PASSWORD="$arg"
     found_logon_password=0
     continue
   fi
-  if [ "$arg" = "--logon-password" ]; then
+  if [ "$arg" == "--logon-password" ]; then
     echo "Argument '--logon-password' removed from the argument list."
     found_logon_password=1
     continue
