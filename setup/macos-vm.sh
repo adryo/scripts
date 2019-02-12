@@ -181,30 +181,26 @@ readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
 if [ ! -f "$FILE_LOG" ]; then
   touch $FILE_LOG
 fi
-exec 3>&1
-exec 4>&2
-exec 1>>"$FILE_LOG"
-exec 2>&1
 ###############################################################################
 
 # Define methods ##############################################################
 debug() {
-  printf '%s\n' "DEBUG: $1" >&3
+  printf '%s\n' "DEBUG: $1"
   log "$1"
 }
 
 error() {
-  printf '%s\n' "ERROR: $1" >&4
+  printf '%s\n' "ERROR: $1"
   log "$1"
 }
 
 info() {
-  printf '%s\n' "$1" >&3
+  printf '%s\n' "$1"
   log "$1"
 }
 
 result() {
-  printf '%s\n' "$1" >&3
+  printf '%s\n' "$1"
   log "$1"
 }
 
@@ -227,15 +223,23 @@ downloadMedias() {
       read -p "Server's url: " FTP_HOST
   fi
 
+  local dowloaded=0
+  echo "Download mode is set to: '$DOWNLOAD_MODE'"
   if [ -z "$DOWNLOAD_MODE" -o \("ftp" = "$DOWNLOAD_MODE"\) ]; then
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
+    if [ $? -eq 0 ]; then
+      dowloaded=1
+    fi
   else 
     if [ "scp" == "$DOWNLOAD_MODE" ]; then
       run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD"
+      if [ $? -eq 0 ]; then
+        dowloaded=1
+      fi
     fi
   fi
 
-  if [ $? -eq 0 ]; then
+  if [ "$downloaded" == "1" ]; then
       echo "Done! Proceeding with installation..."
   else
       echo "Unable to download media. Stoping installation."
@@ -244,12 +248,9 @@ downloadMedias() {
 }
 
 name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
-if [ -z $name ]; then
-  echo "Unable to find installation media ISO files"
-  exit
-fi
+
 # Extract ISO name
-if [ ! -d "$MEDIA_DIR" || "$name" == "" ]; then
+if [ ! -d "$MEDIA_DIR" ] || [ -z "$name" ]; then
   echo "ISO files not found, attempting to download them..."
 
   if [ ! -d "$MEDIA_DIR" ]; then
@@ -271,6 +272,11 @@ echo "* SSH port: $SSH_PORT"
 name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
 name=${name##*/}
 name=${name%.*.*};
+
+if [ -z $name ]; then
+  echo "No installation media found. Unable to install, stopping script..."
+  exit 2
+fi
 
 readonly ISO_NAME="$name"
 
@@ -524,7 +530,7 @@ main() {
     case "$ARG" in
       check) runChecks ;;
       stash) vboxmanage unregistervm --delete "$VM" || true ;;
-      info) echo "$(vboxmanage showvminfo $VM)" >&4 || true ;;
+      info) echo "$(vboxmanage showvminfo $VM)" || true ;;
       snapshot) runSnapshot ;;
       run) runVM ;;
       attach) attach ;;
