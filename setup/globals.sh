@@ -6,12 +6,11 @@ CURRENT_LOGON_PASSWORD=""
 readonly GLOBAL_PLATFORM_OS="$(uname -s)"
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
-initialize(){
   while [ "$#" -ne 0 ]; do
     ARG="$1"
-    shift # get rid of $1, we saved in ARG already
     case "$ARG" in
     --logon-password)
+      shift # get rid of $1, we saved in ARG already
       CURRENT_LOGON_PASSWORD=$1
       shift
       ;;
@@ -26,9 +25,6 @@ initialize(){
       ;;
     esac
   done
-}
-
-initialize "$@"
 
 # Installs expect if is not found in the environment
 install_expect() {
