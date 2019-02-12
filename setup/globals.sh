@@ -57,7 +57,7 @@ install_expect() {
     else
         if [ "$GLOBAL_PLATFORM_OS" == "Linux" ]; then
             echo "Installing expect..."
-            sudo apt-get install expect
+            sudo apt install expect
         fi
     fi
 
