@@ -228,15 +228,11 @@ downloadMedias() {
   echo "Connecting to ${FTP_HOST}${FTP_DIR}, with credentials: $FTP_USER"
   if [ -z "$DOWNLOAD_MODE" ] || [ "ftp" == "$DOWNLOAD_MODE" ]; then
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
-    if [ $? -eq 0 ]; then
-      dowloaded=1
-    fi
+    dowloaded=1
   else 
     if [ "scp" == "$DOWNLOAD_MODE" ]; then
       run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD"
-      if [ $? -eq 0 ]; then
-        dowloaded=1
-      fi
+      dowloaded=1
     fi
   fi
 
@@ -465,7 +461,7 @@ prepareOS(){
   state="running"
   SECONDS=0
 
-  while [[ SECONDS -lt $PREPARATION_TIMEOUT ]] && [[ $state =~ "running" ]]; do
+  while [ SECONDS -lt $PREPARATION_TIMEOUT ] && [ $state =~ "running" ]; do
     # Update state
     state="$(vboxmanage showvminfo $VM | grep 'State:')"
     sleep 10
@@ -481,7 +477,7 @@ prepareOS(){
   state="running"
   SECONDS=0
 
-  while [[ SECONDS -lt 3600 ]] && [[ $state =~ "running" ]]; do
+  while [ SECONDS -lt 3600 ] && [ $state =~ "running" ]; do
     # Update state
     state="$(vboxmanage showvminfo $VM | grep 'State:')"
     sleep 60
