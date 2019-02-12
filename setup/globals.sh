@@ -111,7 +111,7 @@ run_expect() {
     check_install_expect
 
     if [ $? -eq 0 ]; then
-        expect -c "set timeout -1; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
+        expect -c "set timeout -1; spawn $1; expect -re {*(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
     else
         echo "Unable to use expect."
         exit 1
