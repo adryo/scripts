@@ -244,6 +244,10 @@ downloadMedias() {
 }
 
 name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
+if [ -z $name ]; then
+  echo "Unable to find installation media ISO files"
+  exit
+fi
 # Extract ISO name
 if [ ! -d "$MEDIA_DIR" || "$name" == "" ]; then
   echo "ISO files not found, attempting to download them..."
