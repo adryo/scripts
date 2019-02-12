@@ -25,10 +25,6 @@ while [ "$#" -ne 0 ]; do
     echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
     exit 0
     ;;
-  *)
-    echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
-    exit 1
-    ;;
   esac
 done
 
