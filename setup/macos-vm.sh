@@ -461,7 +461,7 @@ prepareOS(){
   state="running"
   SECONDS=0
 
-  while [[ SECONDS -lt $PREPARATION_TIMEOUT ]] && [[ $state == *"running" ]]; do
+  while [[ SECONDS -lt $PREPARATION_TIMEOUT ]] && [[ "$state" =~ "running" ]]; do
     # Update state
     state="$(vboxmanage showvminfo $VM | grep 'State:')"
     sleep 10
@@ -477,7 +477,7 @@ prepareOS(){
   state="running"
   SECONDS=0
 
-  while [[ SECONDS -lt 3600 ]] && [[ $state == *"running" ]]; do
+  while [[ SECONDS -lt 3600 ]] && [[ "$state" =~ "running" ]]; do
     # Update state
     state="$(vboxmanage showvminfo $VM | grep 'State:')"
     sleep 60
