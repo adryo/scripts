@@ -244,7 +244,7 @@ downloadMedias() {
 }
 
 # Extract ISO name
-if [ ! -d "$MEDIA_DIR" ] || [[ "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]]; then
+if [ ! -d "$MEDIA_DIR" ] || "" == "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]; then
   echo "ISO files not found, attempting to download them..."
 
   if [ ! -d "$MEDIA_DIR" ]; then
