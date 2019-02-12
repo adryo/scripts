@@ -21,10 +21,6 @@ while [ "$#" -ne 0 ]; do
   ARG="$1"
   shift # get rid of $1, we saved in ARG already
   case "$ARG" in
-  --logon-password)
-    CURRENT_LOGON_PASSWORD=$1
-    shift
-    ;;
   --apple-account)
     APPLE_USER=$1
     shift
