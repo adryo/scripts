@@ -457,7 +457,7 @@ prepareOS(){
   runVM
 
   # While the VM installer is prepared, check the status of the VM until it shutdowns.
-  echo "Prepare the installation. DO NOT end this script execution. Connect via RDP to '$IP_ADDRESS:$RDP_PORT' and execute the '/Volume/NO\ NAME/prepare.sh' script to be prepared, then this script will continue automatically." >&4
+  echo "Prepare the installation. DO NOT end this script execution. Connect via RDP to '$IP_ADDRESS:$RDP_PORT' and execute the '/Volume/NO\ NAME/prepare.sh' script to be prepared, then this script will continue automatically."
   state="running"
   SECONDS=0
 
