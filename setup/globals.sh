@@ -9,14 +9,11 @@ readonly GLOBAL_PLATFORM_OS="$(uname -s)"
 readonly regex_password="*?assword*:*"
 
 # Extracting --logon-password
+found_logon_password=0
 for arg do
   shift
-  if [ "$arg" == "--logon-password" ]; then
-    echo "Found '--logon-password' argument taking out... $@"
-    CURRENT_LOGON_PASSWORD=$1
-    shift
-    continue
-  fi
+  [ ! -z $found_logon_password ] CURRENT_LOGON_PASSWORD="$arg"; found_logon_password=0 && shift && continue
+  [ "$arg" = "--logon-password" ] found_logon_password=1 && shift && continue
   set -- "$@" "$arg"
 done
 
