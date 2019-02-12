@@ -57,6 +57,9 @@ install_expect() {
     else
         if [ "$GLOBAL_PLATFORM_OS" == "Linux" ]; then
             echo "Installing expect..."
+            sudo rm /var/lib/apt/lists/lock
+            sudo rm /var/cache/apt/archives/lock
+            sudo rm /var/lib/dpkg/lock
             sudo apt install expect
         fi
     fi
