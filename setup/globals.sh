@@ -12,7 +12,7 @@ readonly regex_password="*?assword*:*"
 found_logon_password=0
 for arg do
   shift
-  [ ! -z $found_logon_password ] CURRENT_LOGON_PASSWORD="$arg"; found_logon_password=0 && shift && continue
+  [ ! -z $found_logon_password ] CURRENT_LOGON_PASSWORD="$arg" && found_logon_password=0 && shift && continue
   [ "$arg" = "--logon-password" ] found_logon_password=1 && shift && continue
   set -- "$@" "$arg"
 done
