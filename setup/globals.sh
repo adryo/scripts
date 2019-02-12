@@ -12,7 +12,7 @@ readonly regex_password="*?assword*:*"
 for arg do
   shift
   if [ "$arg" == "--logon-password" ]; then
-    echo "Found '--logon-password' argument taking out..."
+    echo "Found '--logon-password' argument taking out... $@"
     CURRENT_LOGON_PASSWORD=$1
     shift
     continue
