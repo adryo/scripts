@@ -20,7 +20,7 @@ install_expect() {
         # curl -sL -O http://downloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz --output tcl8.6.9-src.tar.gz
         curl -sL -O http://downloads.sourceforge.net/tcl/$TCL_PKG --output $TCL_PKG
         echo "Done!"
-        echo "Decompressing ..."
+        echo "Unpacking $TCL_PKG ..."
         tar -xzf $TCL_PKG
         echo "Done!"
 
@@ -36,7 +36,7 @@ install_expect() {
         echo "Downloading expect $EXPECT_PKG..."
         curl -sL -O https://downloads.sourceforge.net/expect/$EXPECT_PKG --output $EXPECT_PKG
         echo "Done!"
-        echo "Decompressing ..."
+        echo "Unpacking $EXPECT_PKG ..."
         tar -xzf $EXPECT_PKG
         echo "Done!"
 
@@ -53,7 +53,6 @@ install_expect() {
         # Now, as the root user:
         #sudo make $EXPECT_FULL_NAME/install &&
         expectify "sudo ln -svf $EXPECT_FULL_NAME/libexpect5.45.4.so /usr/lib"
-        echo "Done!"
     else
         if [ "$GLOBAL_PLATFORM_OS" == "Linux" ]; then
             echo "Installing expect..."
