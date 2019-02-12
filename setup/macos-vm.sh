@@ -225,8 +225,8 @@ downloadMedias() {
 
   local dowloaded=0
   echo "Download mode is set to: '$DOWNLOAD_MODE'"
-  if [ -z "$DOWNLOAD_MODE" -o \("ftp" = "$DOWNLOAD_MODE"\) ]; then
-    echo "Connecting to ${FTP_HOST}${FTP_DIR}, with credentials: $FTP_USER"
+  echo "Connecting to ${FTP_HOST}${FTP_DIR}, with credentials: $FTP_USER"
+  if [ -z "$DOWNLOAD_MODE" ] || [ "ftp" == "$DOWNLOAD_MODE" ]; then
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
     if [ $? -eq 0 ]; then
       dowloaded=1
