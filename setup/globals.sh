@@ -122,7 +122,8 @@ run_expect() {
 expect_digit(){
     check_install_expect
     if [ $? -eq 0 ]; then
-        val=$(expect -c "set timeout -1; exp_internal 1; log_user 0; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
+        regex_password="(P|p)assword*"
+        val=$(expect -c "set timeout -1; exp_internal 1; log_user 0; spawn $1; expect $regex_password {send \"$2\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
         echo "HERE val: $val"
         return $val
     else
