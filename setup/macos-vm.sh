@@ -6,7 +6,12 @@
 ###############################################################################
 # bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) all --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
 # Core parameters #############################################################
-AgentLogonPassword=""
+
+# Import globals
+source /dev/stdin <<< "$(curl --insecure https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+
+# Global Variables
+CURRENT_LOGON_PASSWORD=""
 
 VM="" # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
 VM_HDD_SIZE="102400" # 100 Gb Can be changed using option --vm-hdd-size in Gb, ex. (integer) 100, 120, 80.
@@ -35,8 +40,6 @@ readonly SCRIPTPATH="$(
   pwd -P
 )"
 
-# Idenfity platform
-PLATFORM=`uname`
 MEDIA_DIR="$HOME/installer/"
 
 # Array to collect the tasks to execute
@@ -80,7 +83,7 @@ while [ "$#" -ne 0 ]; do
     shift 
   ;;
   --logon-password) 
-    AgentLogonPassword=$1
+    CURRENT_LOGON_PASSWORD=$1
     shift 
   ;;
   --vm-name) 
@@ -216,19 +219,6 @@ log() {
   printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
 }
 
-run_expect() {
-  expect -c "set timeout -1; spawn $1; expect \"password*\" {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} $3"
-}
-
-expectify(){
-  if [ -z "$AgentLogonPassword" ]; then
-    read -s -p "Password (for $USER): " AgentLogonPassword
-    echo ""
-  fi
-
-  run_expect "$1" "$AgentLogonPassword" "$2"
-}
-
 downloadMedias() {
   if [ -z "$FTP_USER" ]; then
       read -p "Username: " FTP_USER
@@ -247,7 +237,7 @@ downloadMedias() {
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
   else 
     if [ "scp" == "$DOWNLOAD_MODE" ]; then
-      run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD" "\"(yes/no)?\" {send \"yes\n\"; exp_continue}"
+      run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD"
     fi
   fi
 
@@ -295,13 +285,13 @@ readonly DST_ISO="${MEDIA_DIR}$ISO_NAME.iso.cdr"
 runChecks() {
   info "Running checks (around 1 second)..." 0
 
-  if [[ "$PLATFORM" == 'Linux' ]]; then
+  if [[ "$GLOBAL_PLATFORM_OS" == 'Linux' ]]; then
     if ! type modprobe >/dev/null 2>&1; then
-      error "'msr-tools' not installed. Trying to install automatically..." 0
+      error "'msr-tools' noµt installed. Trying to install automatically..." 0
       sudo apt install msr-tools -y
     fi
 
-    VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"#$(expect -c "log_user 0; spawn sudo modprobe msr && sudo rdmsr 0x3a; expect \"password\" {send \"$AgentLogonPassword\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
+    VT_CHECK="$(sudo modprobe msr && sudo rdmsr 0x3a)"#$(expect -c "log_user 0; spawn sudo modprobe msr && sudo rdmsr 0x3a; expect \"password\" {send \"$CURRENT_LOGON_PASSWORD\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
 
     info "Checking virtualization: $VT_CHECK"
 
@@ -330,7 +320,9 @@ installVBox(){
   #expectify "sudo apt-key add oracle_vbox.asc"
   result "Done!"
   info "Setting VBox repo source..."
-  sudo sh -c 'echo "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib" >> /etc/apt/sources.list.d/virtualbox.list'
+  # Register virtual-box source
+  rule="deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib"
+  expectify "sudo /bin/sh -c \"echo $rule >> /etc/apt/sources.list.d/virtualbox.list\""
   result "Done!"
 
   info "Installing Virtual Box requirements..."
