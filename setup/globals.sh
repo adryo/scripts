@@ -5,25 +5,14 @@ CURRENT_LOGON_PASSWORD=""
 # Globals
 readonly GLOBAL_PLATFORM_OS="$(uname -s)"
 
-# This function is used to initialize the variables according to the supplied values through the scripts arguments
-while [ "$#" -ne 0 ]; do
-  ARG="$1"
-  case "$ARG" in
-  --logon-password)
-    shift # get rid of $1, we saved in ARG already
+# Extracting --logon-password
+for arg do
+  shift
+  if [ "$arg" = "--logon-password" ]; then
     CURRENT_LOGON_PASSWORD=$1
-    shift
-    ;;
-  --help)
-    echo "Usage:"
-    echo ""
-    echo "./script.sh [--options]"
-    echo ""
-    echo "Available options:"
-    echo "--help: Display the usage tips plus tasks and options descriptions."
-    echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
-    ;;
-  esac
+    shift && continue
+  fi
+  set -- "$@" "$arg"
 done
 
 # Installs expect if is not found in the environment
