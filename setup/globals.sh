@@ -23,7 +23,6 @@ while [ "$#" -ne 0 ]; do
     echo "Available options:"
     echo "--help: Display the usage tips plus tasks and options descriptions."
     echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
-    exit 0
     ;;
   esac
 done
