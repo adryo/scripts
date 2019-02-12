@@ -5,6 +5,9 @@ CURRENT_LOGON_PASSWORD=""
 # Globals
 readonly GLOBAL_PLATFORM_OS="$(uname -s)"
 
+# Expect REGEX
+readonly regex_password="*?assword*:*"
+
 # Extracting --logon-password
 for arg do
   shift
@@ -111,7 +114,7 @@ run_expect() {
     check_install_expect
 
     if [ $? -eq 0 ]; then
-        expect -c "set timeout -1; spawn $1; expect -re {(P|p)assword*} {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
+        expect -c "set timeout -1; spawn $1; expect $regex_password {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
     else
         echo "Unable to use expect."
         exit 1
@@ -122,10 +125,8 @@ run_expect() {
 expect_digit(){
     check_install_expect
     if [ $? -eq 0 ]; then
-        regex_password="(P|p)assword"
-        val=$(expect -c "set timeout -1; exp_internal 1; log_user 0; spawn $1; expect -re $regex_password {send \"$2\n\"; exp_continue} \"^\[0-9]\" {puts \$expect_out(0,string)}")
-        echo "HERE val: $val"
-        return $val
+        local regex_digit="\[0-9]"
+        return $(expect -c "set timeout -1; log_user 0; spawn $1; expect $regex_password {send \"$2\r\n\"; exp_continue} $regex_digit {puts \$expect_out(0,string)}")
     else
         echo "Unable to use expect."
         exit 1
