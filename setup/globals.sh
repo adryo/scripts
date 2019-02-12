@@ -13,7 +13,8 @@ for arg do
   shift
   if [ "$arg" = "--logon-password" ]; then
     CURRENT_LOGON_PASSWORD=$1
-    shift && continue
+    shift
+    continue
   fi
   set -- "$@" "$arg"
 done
