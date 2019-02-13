@@ -34,6 +34,8 @@ while [ "$#" -ne 0 ]; do
     echo "# Importing online file" >> $scriptFile
     echo 'bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
+    echo "Script installed"
+    exit 0
     ;;
   --apple-account)
     APPLE_USER=$1
