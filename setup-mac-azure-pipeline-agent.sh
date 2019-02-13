@@ -54,7 +54,7 @@ while [ "$#" -ne 0 ]; do
     ;;
   --install-xcode)
     IN="$(echo -e "$1" | tr -d '[:space:]')"
-    IFS=';' read -ra VERS <<<"$IN"
+    IFS=',' read -ra VERS <<<"$IN"
     for v in "${VERS[@]}"; do
       # process "$v"
       XCODE_VERSIONS=("$v" "${XCODE_VERSIONS[@]}")
@@ -141,6 +141,7 @@ fi
 
 ## Install XCode-Install gem
 if ! type xcversion >/dev/null 2>&1; then
+  echo "Installing xcversion ..."
   ## This will require you provide an Apple Developer Account's credentials
   ## More info at: https://github.com/KrauseFx/xcode-install
   curl -sL -O https://github.com/neonichu/ruby-domain_name/releases/download/v0.5.99999999/domain_name-0.5.99999999.gem
@@ -150,6 +151,7 @@ if ! type xcversion >/dev/null 2>&1; then
   expectify "sudo gem install --conservative xcode-install"
 
   rm -f domain_name-0.5.99999999.gem
+  echo "Done!"
 fi
 
 if [ -z "$APPLE_USER" ]; then
@@ -160,6 +162,7 @@ if [ -z "$APPLE_PASSWORD" ]; then
   read -s -p "Password (for $APPLE_USER): " APPLE_PASSWORD
   echo ""
 fi
+
 # Install Xcode 10.1
 echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
 for i in "${XCODE_VERSIONS[@]}"; do
