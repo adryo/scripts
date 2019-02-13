@@ -59,6 +59,7 @@ while [ "$#" -ne 0 ]; do
       # process "$v"
       XCODE_VERSIONS=("$v" "${XCODE_VERSIONS[@]}")
     done
+    echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
     shift
     ;;
   --help)
