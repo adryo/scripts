@@ -22,7 +22,7 @@ while [ "$#" -ne 0 ]; do
   shift # get rid of $1, we saved in ARG already
   case "$ARG" in
   --install-script)
-    echo "Requested to install local script..."
+    echo "Requested to install local script... $0"
     readonly scriptFile="$HOME/macos-vm.sh"
     if [ -f "$scriptFile" ]; then
         rm "$scriptFile"
