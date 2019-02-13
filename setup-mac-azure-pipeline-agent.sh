@@ -166,7 +166,7 @@ fi
 # Install Xcode 10.1
 echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
 for i in "${XCODE_VERSIONS[@]}"; do
-  run_expect "xcversion install $i" "$APPLE_PASSWORD" "\"Username:\" {send \"$APPLE_USER\n\"; exp_continue}"
+  expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:*\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWORD\n\"; exp_continue} \"Password: \" { send \"$CURRENT_LOGON_PASSWORD\n\"; exp_continue}"
 done
 
 if ! type brew >/dev/null 2>&1; then
