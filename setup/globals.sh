@@ -119,9 +119,20 @@ check_install_expect() {
 # $3 rules
 run_expect() {
     check_install_expect
-
     if [ $? -eq 0 ]; then
-        expect -c "set timeout -1; spawn $1; expect $regex_password {send \"$2\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
+        local PASSWORD="$CURRENT_LOGON_PASSWORD"
+    
+        if [ -z "$2" ]; then
+            while [ -z "$CURRENT_LOGON_PASSWORD" ]; do
+                read -s -p "Password (for $USER): " CURRENT_LOGON_PASSWORD
+                echo ""
+            done
+            PASSWORD="$CURRENT_LOGON_PASSWORD"
+        else
+            PASSWORD="$2"
+        fi
+        
+        expect -c "set timeout -1; spawn $1; expect $regex_password {send \"$PASSWORD\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
     else
         echo "Unable to use expect."
         exit 1
@@ -132,8 +143,20 @@ run_expect() {
 expect_digit(){
     check_install_expect
     if [ $? -eq 0 ]; then
+        local PASSWORD="$CURRENT_LOGON_PASSWORD"
+    
+        if [ -z "$2" ]; then
+            while [ -z "$CURRENT_LOGON_PASSWORD" ]; do
+                read -s -p "Password (for $USER): " CURRENT_LOGON_PASSWORD
+                echo ""
+            done
+            PASSWORD="$CURRENT_LOGON_PASSWORD"
+        else
+            PASSWORD="$2"
+        fi
+        
         local regex_digit="\[0-9]"
-        return $(expect -c "set timeout -1; log_user 0; spawn $1; expect $regex_password {send \"$2\r\n\"; exp_continue} $regex_digit {puts \$expect_out(0,string)}")
+        return $(expect -c "set timeout -1; log_user 0; spawn $1; expect $regex_password {send \"$PASSWORD\r\n\"; exp_continue} $regex_digit {puts \$expect_out(0,string)}")
     else
         echo "Unable to use expect."
         exit 1
