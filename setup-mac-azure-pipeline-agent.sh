@@ -59,7 +59,6 @@ while [ "$#" -ne 0 ]; do
       # process "$v"
       XCODE_VERSIONS=("$v" "${XCODE_VERSIONS[@]}")
     done
-    echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
     shift
     ;;
   --help)
@@ -162,6 +161,7 @@ if [ -z "$APPLE_PASSWORD" ]; then
   echo ""
 fi
 # Install Xcode 10.1
+echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
 for i in "${XCODE_VERSIONS[@]}"; do
   run_expect "xcversion install $i" "$APPLE_PASSWORD" "\"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWORD\n\"; exp_continue}"
 done
