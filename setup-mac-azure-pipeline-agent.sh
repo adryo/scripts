@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -Ls https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
 # Global Variables
 APPLE_USER=""
@@ -22,8 +22,8 @@ while [ "$#" -ne 0 ]; do
   shift # get rid of $1, we saved in ARG already
   case "$ARG" in
   --install-script)
-    echo "Requested to install local script... $0"
-    readonly scriptFile="$HOME/macos-vm.sh"
+    echo "Requested to install local script..."
+    readonly scriptFile="$HOME/macos-agent.sh"
     if [ -f "$scriptFile" ]; then
         rm "$scriptFile"
     fi
@@ -32,7 +32,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
