@@ -94,6 +94,7 @@ echo "Starting script..."
 
 install_xcodeclt() {
   printf '%s\n' "$1"
+  echo "Requesting installation..."
   # Download and install Xcode Command Line Tools
   touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
   PROD=$(softwareupdate -l |
@@ -161,7 +162,7 @@ if [ -z "$APPLE_PASSWORD" ]; then
 fi
 # Install Xcode 10.1
 for i in "${XCODE_VERSIONS[@]}"; do
-  expectify "xcversion install $i" "\"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWORD\n\"; exp_continue}"
+  run_expect "xcversion install $i" "$APPLE_PASSWORD" "\"Username:\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWORD\n\"; exp_continue}"
 done
 
 if ! type brew >/dev/null 2>&1; then
