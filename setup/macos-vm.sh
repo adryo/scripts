@@ -59,7 +59,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
