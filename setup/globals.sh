@@ -132,7 +132,7 @@ run_expect() {
             PASSWORD="$2"
         fi
         
-        expect -c "set timeout -1; spawn $1; expect $regex_password {send \"$PASSWORD\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue} $3"
+        expect -c "set timeout -1; spawn $1; expect $3 $regex_password {send \"$PASSWORD\n\"; exp_continue} \"RETURN\" {send \"\n\"; exp_continue} \"(yes/no)?\" {send \"yes\n\"; exp_continue}"
     else
         echo "Unable to use expect."
         exit 1
