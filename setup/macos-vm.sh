@@ -8,7 +8,7 @@
 # Core parameters #############################################################
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
 # Global Variables
 VM="" # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
