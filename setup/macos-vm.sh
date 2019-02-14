@@ -2,31 +2,31 @@
 #
 # DESCRIPTION
 # Run macOS 10.14 Mojave in Virtualbox.
-# 
+#
 ###############################################################################
 # bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) all --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
 # Core parameters #############################################################
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<<"$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
 # Global Variables
-VM="" # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
+VM=""                # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
 VM_HDD_SIZE="102400" # 100 Gb Can be changed using option --vm-hdd-size in Gb, ex. (integer) 100, 120, 80.
 VM_RES="1366x768"
 VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integer) 6, 8, 4.
-VM_CPU="2" # Can be changed using option --vm-cpu
+VM_CPU="2"    # Can be changed using option --vm-cpu
 VM_SNAPSHOT_TAG=""
-readonly VM_VRAM="128"  
+readonly VM_VRAM="128"
 
 RDP_PORT="3389" # Can be changed using option --vm-rdp-port
 SSH_PORT="2222" # Can be changed using option --vm-ssh-port
 
 DOWNLOAD_MODE="ftp"
-FTP_USER="" # Can be set using --ftp-user
-FTP_PASSWORD="" # Can be set using --ftp-password
-FTP_HOST="" # Can be set using --ftp-host
-FTP_DIR="" # Can be set using --ftp-dir
+FTP_USER=""              # Can be set using --ftp-user
+FTP_PASSWORD=""          # Can be set using --ftp-password
+FTP_HOST=""              # Can be set using --ftp-host
+FTP_DIR=""               # Can be set using --ftp-dir
 
 # Other variables
 PREPARATION_TIMEOUT=1800 # 30 minutes
@@ -52,87 +52,87 @@ while [ "$#" -ne 0 ]; do
     echo "Requested to install local script..."
     readonly scriptFile="$HOME/macos-vm.sh"
     if [ -f "$scriptFile" ]; then
-        rm "$scriptFile"
+      rm "$scriptFile"
     fi
 
     echo "Installing script..."
-    echo "#!/usr/bin/env bash" >> $scriptFile
-    echo "#" >> $scriptFile
-    echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) "$@" || exit 1' >> $scriptFile
+    echo "#!/usr/bin/env bash" >>$scriptFile
+    echo "#" >>$scriptFile
+    echo "# Importing online file" >>$scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) "$@" || exit 1' >>$scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
     ;;
-  --ftp-host) 
+  --ftp-host)
     FTP_HOST=$1
-    shift 
-  ;;
-  --ftp-user) 
+    shift
+    ;;
+  --ftp-user)
     FTP_USER=$1
-    shift 
-  ;;
-  --ftp-password) 
+    shift
+    ;;
+  --ftp-password)
     FTP_PASSWORD=$1
-    shift 
-  ;;
-  --ftp-dir) 
+    shift
+    ;;
+  --ftp-dir)
     FTP_DIR=$1
-    shift 
-  ;;
-  --scp-host) 
+    shift
+    ;;
+  --scp-host)
     FTP_HOST=$1
-    shift 
-  ;;
-  --scp-user) 
+    shift
+    ;;
+  --scp-user)
     FTP_USER=$1
-    shift 
-  ;;
-  --scp-password) 
+    shift
+    ;;
+  --scp-password)
     FTP_PASSWORD=$1
-    shift 
-  ;;
-  --scp-dir) 
+    shift
+    ;;
+  --scp-dir)
     FTP_DIR=$1
-    shift 
-  ;;
-  --vm-name) 
+    shift
+    ;;
+  --vm-name)
     VM=$1
-    shift 
-  ;;
-  --vm-hdd-size) 
+    shift
+    ;;
+  --vm-hdd-size)
     VM_HDD_SIZE=$(expr $1 \* 1024)
-    shift 
-  ;;
-  --vm-ram-size) 
+    shift
+    ;;
+  --vm-ram-size)
     VM_RAM=$(expr $1 \* 1024)
-    shift 
-  ;;
-  --vm-cpu) 
+    shift
+    ;;
+  --vm-cpu)
     VM_CPU=$1
-    shift 
-  ;;
-  --vm-rdp-port) 
+    shift
+    ;;
+  --vm-rdp-port)
     RDP_PORT=$1
-    shift 
-  ;;
-  --vm-ssh-port) 
+    shift
+    ;;
+  --vm-ssh-port)
     SSH_PORT=$1
-    shift 
-  ;;
-  --vm-snapshot-tag) 
+    shift
+    ;;
+  --vm-snapshot-tag)
     VM_SNAPSHOT_TAG=$1
-    shift 
-  ;;
-  --preparation-timeout) 
+    shift
+    ;;
+  --preparation-timeout)
     PREPARATION_TIMEOUT=$(expr $1 \* 60)
-    shift 
-  ;;
-  --download-mode) 
+    shift
+    ;;
+  --download-mode)
     DOWNLOAD_MODE=$1
-    shift 
-  ;;
-  --help) 
+    shift
+    ;;
+  --help)
     echo "Usage:"
     echo ""
     echo "./mascos-vm.sh [task][task] [--options]"
@@ -172,14 +172,14 @@ while [ "$#" -ne 0 ]; do
     echo "--vm-ssh-port: Sets the port to connect via SSH to the VM's instance while it's running. Default is 2222."
     echo "--vm-snapshot-tag: Sets a custom tag identifier for the snapshot. Only usable when executing snapshot task."
     exit 0
-  ;;
-  all|check|info|run|stop|stash|snapshot|attach|detach|install|create|prepare)
+    ;;
+  all | check | info | run | stop | stash | snapshot | attach | detach | install | create | prepare)
     tasks+=($ARG)
-  ;;
+    ;;
   *)
     echo "Invalid command or option '$ARG'. Execute --help to see valid arguments."
     exit 1
-  ;;
+    ;;
   esac
 done
 
@@ -222,21 +222,21 @@ result() {
 
 log() {
   datestring="$(date +'%Y-%m-%d %H:%M:%S')"
-  printf '%s\n' "[$datestring] $1" >> "$FILE_LOG"
+  printf '%s\n' "[$datestring] $1" >>"$FILE_LOG"
 }
 
 downloadMedias() {
   if [ -z "$FTP_USER" ]; then
-      read -p "Username: " FTP_USER
+    read -p "Username: " FTP_USER
   fi
 
   if [ -z "$FTP_PASSWORD" ]; then
-      read -s -p "Password (for $FTP_USER): " FTP_PASSWORD
-      echo ""
+    read -s -p "Password (for $FTP_USER): " FTP_PASSWORD
+    echo ""
   fi
 
   if [ -z "$FTP_HOST" ]; then
-      read -p "Server's url: " FTP_HOST
+    read -p "Server's url: " FTP_HOST
   fi
 
   local dowloaded=0
@@ -245,7 +245,7 @@ downloadMedias() {
   if [ -z "$DOWNLOAD_MODE" ] || [ "ftp" == "$DOWNLOAD_MODE" ]; then
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
     dowloaded=1
-  else 
+  else
     if [ "scp" == "$DOWNLOAD_MODE" ]; then
       run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD"
       dowloaded=1
@@ -253,38 +253,31 @@ downloadMedias() {
   fi
 
   if [ "$downloaded" == "1" ]; then
-      echo "Done! Proceeding with installation..."
+    echo "Done! Proceeding with installation..."
   else
-      echo "Unable to download media. Stoping installation."
-      exit 1
+    echo "Unable to download media. Stoping installation."
+    exit 1
   fi
 }
 
 # Extract ISO name
 if [ ! -d "$MEDIA_DIR" ] && mkdir -p "$MEDIA_DIR" || [ -z "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]; then
   echo "ISO files not found, attempting to download them..."
-  
+
   # Request to download the ISO files.
   downloadMedias
 fi
 
-echo "Selected profile for setup: "
-echo "* VM's name: $VM"
-echo "* HDD Size: $((VM_HDD_SIZE / 1024)) Gb"
-echo "* VM RAM: $((VM_RAM / 1024)) Gb"
-echo "* VM CPU: $VM_CPU"
-echo "* RDP port: $RDP_PORT"
-echo "* SSH port: $SSH_PORT"
-
+echo "Looking for installation media..."
 name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
 name=${name##*/}
-name=${name%.*.*};
+name=${name%.*.*}
 
 if [ -z $name ]; then
   echo "No installation media found. Unable to install, stopping script..."
   exit 2
 fi
-
+echo "Found!"
 readonly ISO_NAME="$name"
 
 readonly DST_DIR="$HOME/VirtualBox VMs/"
@@ -312,12 +305,12 @@ runChecks() {
 
     if [ \("$VT_CHECK" = ""\) -o \("$VT_CHECK" = "0"\) ]; then
       result "'Vt-x' is not supported in this machine. Please use a different hardware." 0
-      exit 1;
+      exit 1
     fi
 
     if [ "$VT_CHECK" = "1" ]; then
       result "'Vt-x' is supported but is currently disabled. Please enable it in the BIOS configuration and run this script again." 0
-      exit 1;
+      exit 1
     fi
   fi
 
@@ -327,11 +320,11 @@ runChecks() {
   fi
 }
 
-installVBox(){
+installVBox() {
   info "Attempting to obtain VirtualBox keys..."
-  wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >> oracle_vbox_2016.asc
+  wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >>oracle_vbox_2016.asc
   expectify "sudo apt-key add oracle_vbox_2016.asc"
-  wget https://www.virtualbox.org/download/oracle_vbox.asc -O- >> oracle_vbox.asc
+  wget https://www.virtualbox.org/download/oracle_vbox.asc -O- >>oracle_vbox.asc
   expectify "sudo apt-key add oracle_vbox.asc"
   result "Done!"
   info "Setting VBox repo source..."
@@ -360,11 +353,11 @@ installVBox(){
     wget "http://download.virtualbox.org/virtualbox/$VB_VERSION/$EXT_PACK"
 
     if [ $? -eq 0 ]; then
-        result "Extension packs downloaded. Proceeding with installation..."
-        expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+      result "Extension packs downloaded. Proceeding with installation..."
+      expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
     else
-        result "Unable to download Extension Packs. Stoping installation."
-        exit 1
+      result "Unable to download Extension Packs. Stoping installation."
+      exit 1
     fi
   fi
 
@@ -375,6 +368,13 @@ installVBox(){
 }
 
 createVM() {
+  echo "Selected profile for setup: "
+  echo "* VM's name: $VM"
+  echo "* HDD Size: $((VM_HDD_SIZE / 1024)) Gb"
+  echo "* VM RAM: $((VM_RAM / 1024)) Gb"
+  echo "* VM CPU: $VM_CPU"
+  echo "* RDP port: $RDP_PORT"
+  echo "* SSH port: $SSH_PORT"
   if [ ! -e "$VM_DIR" ]; then
     mkdir -p "$VM_DIR"
   fi
@@ -389,12 +389,12 @@ createVM() {
   if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
     result "Done!"
     vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
-    vboxmanage modifyvm "$VM" --usbxhci on --memory "$VM_RAM" --vram "$VM_VRAM" --cpus "$VM_CPU" --firmware efi --chipset ich9 --mouse usbtablet --keyboard usb    
-    vboxmanage setextradata "$VM" "CustomVideoMode1" "${VM_RES}x32"    
-    vboxmanage setextradata "$VM" VBoxInternal2/EfiGraphicsResolution "$VM_RES"    
+    vboxmanage modifyvm "$VM" --usbxhci on --memory "$VM_RAM" --vram "$VM_VRAM" --cpus "$VM_CPU" --firmware efi --chipset ich9 --mouse usbtablet --keyboard usb
+    vboxmanage setextradata "$VM" "CustomVideoMode1" "${VM_RES}x32"
+    vboxmanage setextradata "$VM" VBoxInternal2/EfiGraphicsResolution "$VM_RES"
     vboxmanage storagectl "$VM" --name "SATA Controller" --add sata --controller IntelAHCI --hostiocache on
     vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_DIR/$VM.vdi"
-  
+
     # vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium none
     # vboxmanage storageattach "MacOS-Mojave" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none
 
@@ -424,21 +424,21 @@ runVM() {
     vboxmanage startvm "$VM" --type headless
 
     if [ $? -eq 0 ]; then
-        result "Virtual Machine running..."
+      result "Virtual Machine running..."
     else
-        result "Unable to start Virtual Machine, probably it means that virtualization is not enabled."
-        exit 1
+      result "Unable to start Virtual Machine, probably it means that virtualization is not enabled."
+      exit 1
     fi
   else
     result "already running."
   fi
 }
 
-stopVM(){
+stopVM() {
   vboxmanage controlvm "$VM" poweroff soft || true
 }
 
-attach(){
+attach() {
   info "Attaching ISO files..." 0
   state="$(vboxmanage showvminfo $VM | grep 'State:')"
   if [[ $state =~ "running" ]]; then
@@ -451,7 +451,7 @@ attach(){
   result "Done!"
 }
 
-detach(){
+detach() {
   info "Detaching ISO files..." 0
   state="$(vboxmanage showvminfo $VM | grep 'State:')"
   if [[ $state =~ "running" ]]; then
@@ -459,13 +459,13 @@ detach(){
     info "Stopping VM before detach the medias..." 0
   fi
 
-  vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none 
+  vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none
   vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium none
   result "Done!"
 }
 
-# This step runs inmediatly after the vm creation 
-prepareOS(){
+# This step runs inmediatly after the vm creation
+prepareOS() {
   # Attach the installation media
   attach
 
@@ -485,7 +485,7 @@ prepareOS(){
 
   # Detaching the installation medias
   detach
-  
+
   info "Restarting the VM after changes. Installing OS..." 0
   runVM
 
@@ -507,8 +507,8 @@ prepareOS(){
   result "You are good to go and complete the configuration!"
 }
 
-runSnapshot(){
-  NOW=`date +"%m-%d-%Y%T"`
+runSnapshot() {
+  NOW=$(date +"%m-%d-%Y%T")
   SNAPSHOT_DESCRIPTION="Snapshot taken on $NOW"
 
   vboxmanage snapshot $VM take "${name}_${NOW}" --description "${VM_SNAPSHOT_TAG}$SNAPSHOT_DESCRIPTION"
@@ -535,18 +535,18 @@ main() {
     ARG="$1"
     shift # get rid of $1, we saved in ARG already
     case "$ARG" in
-      check) runChecks ;;
-      stash) vboxmanage unregistervm --delete "$VM" || true ;;
-      info) echo "$(vboxmanage showvminfo $VM)" || true ;;
-      snapshot) runSnapshot ;;
-      run) runVM ;;
-      attach) attach ;;
-      detach) detach ;;
-      prepare) prepareOS ;;
-      stop) stopVM ;;
-      create) createVM ;;
-      install) installVBox ;;
-      all) runChecks && createVM && prepareOS ;;
+    check) runChecks ;;
+    stash) vboxmanage unregistervm --delete "$VM" || true ;;
+    info) echo "$(vboxmanage showvminfo $VM)" || true ;;
+    snapshot) runSnapshot ;;
+    run) runVM ;;
+    attach) attach ;;
+    detach) detach ;;
+    prepare) prepareOS ;;
+    stop) stopVM ;;
+    create) createVM ;;
+    install) installVBox ;;
+    all) runChecks && createVM && prepareOS ;;
     esac
   done
 }
