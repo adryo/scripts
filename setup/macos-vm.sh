@@ -189,7 +189,7 @@ if [ -z "$tasks" ]; then
 fi
 
 while [ -z "$VM" ]; do
-  read -p "Enter VM's name or press Ctrl+c to cancel the installation: " VM
+  read -p "Enter VM's name or press Ctrl+c to stop the script: " VM
 done
 
 readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
