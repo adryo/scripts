@@ -154,6 +154,7 @@ while [ "$#" -ne 0 ]; do
     echo ""
     echo "Available options:"
     echo "--help: Display the usage tips plus tasks and options descriptions."
+    echo "--install-script: Installs a shortcut of the current script in the Home directory, making you able to use the script like: ~/script.sh [tasks] [options]."
     echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
     echo "--download-mode: Sets the download mode between 'ftp' or 'scp'. Use --ftp-* or --scp-* options to provide credentials and host values. Default mode is FTP."
     echo "--preparation-timeout: Sets timeout (in minutes) to await in preparation mode. Default is (30) minutes."
@@ -534,11 +535,25 @@ prepareOS() {
 }
 
 runSnapshot() {
+  info "Requested to snapshot '$VM', proceding..."
   local readonly NOW=$(date +"%m-%d-%Y%T")
   local readonly SNAPSHOT_DESCRIPTION="Snapshot taken on $NOW"
   local readonly default="$VM-$NOW"
   local readonly name=${VM_SNAPSHOT_TAG:-$default}
   vboxmanage snapshot $VM take "$name" --description "$SNAPSHOT_DESCRIPTION"
+  if [ "$?" == "0" ]; then
+    result "Done!"
+  fi
+  result ""
+}
+
+stashVM(){
+  info "Requested to remove '$VM', proceding..."
+  vboxmanage unregistervm --delete "$VM"
+  if [ "$?" == "0" ]; then
+    result "Done!"
+  fi
+  result ""
 }
 
 cleanup() {
@@ -563,7 +578,7 @@ main() {
     shift # get rid of $1, we saved in ARG already
     case "$ARG" in
     check) runChecks ;;
-    stash) vboxmanage unregistervm --delete "$VM" || true ;;
+    stash)  stashVM ;;
     info) echo "$(vboxmanage showvminfo $VM)" || true ;;
     snapshot) runSnapshot ;;
     run) runVM ;;
