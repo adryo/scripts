@@ -181,8 +181,10 @@ fi
 
 # Install Xcode 10.1
 echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
+export FASTLANE_USER="$APPLE_USER"
+export FASTLANE_PASSWORD="$APPLE_PASSWORD"
 for i in "${XCODE_VERSIONS[@]}"; do
-  expect -c "set timeout -1; spawn xcversion install $i; expect \"Username:*\" {send \"$APPLE_USER\n\"; exp_continue} \"Password (for *)\" { send \"$APPLE_PASSWORD\n\"; exp_continue} \"Password: \" { send \"$CURRENT_LOGON_PASSWORD\n\"; exp_continue}"
+  xcversion install "$i"
 done
 
 if ! type brew >/dev/null 2>&1; then
