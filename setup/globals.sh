@@ -6,7 +6,11 @@ CURRENT_LOGON_PASSWORD=""
 readonly GLOBAL_PLATFORM_OS="$(uname -s)"
 
 # Expect REGEX
-readonly regex_password="*?assword*:*"
+regex_password="*?assword*:*"
+
+if [ "$GLOBAL_PLATFORM_OS" == "Darwin" ]; then
+  regex_password="Password:*"
+fi
 
 # Extracting --logon-password
 found_logon_password=0
