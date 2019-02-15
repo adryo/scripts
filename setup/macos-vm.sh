@@ -18,6 +18,7 @@ VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integ
 VM_CPU="2"    # Can be changed using option --vm-cpu
 VM_SNAPSHOT_TAG=""
 readonly VM_VRAM="128"
+readonly VM_DIR="$HOME/VirtualBox VMs/$VM"
 
 RDP_PORT="3389" # Can be changed using option --vm-rdp-port
 SSH_PORT="2222" # Can be changed using option --vm-ssh-port
@@ -226,17 +227,25 @@ log() {
 }
 
 downloadMedias() {
+  if [ -z "$FTP_HOST" ]; then
+    local mode=""
+    read -p "Download mode [ftp/scp] (Press ENTER to ftp): " mode
+    local serverTip="(ex. 'ftp://myopenftp.com)"
+    if [ "$mode" == "scp" ]; then
+      DOWNLOAD_MODE="$mode"
+      serverTip="(ex. 'domain.name.com' / IP number)"
+    fi
+    read -p "Server's address $serverTip: " FTP_HOST
+    read -p "Directory (Press ENTER to skip): " FTP_DIR
+  fi
+
   if [ -z "$FTP_USER" ]; then
-    read -p "Username: " FTP_USER
+    read -p "[$FTP_HOST] Username: " FTP_USER
   fi
 
   if [ -z "$FTP_PASSWORD" ]; then
     read -s -p "Password (for $FTP_USER): " FTP_PASSWORD
     echo ""
-  fi
-
-  if [ -z "$FTP_HOST" ]; then
-    read -p "Server's url: " FTP_HOST
   fi
 
   local dowloaded=0
@@ -260,32 +269,35 @@ downloadMedias() {
   fi
 }
 
-# Extract ISO name
-if [ ! -d "$MEDIA_DIR" ] && mkdir -p "$MEDIA_DIR" || [ -z "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]; then
-  echo "ISO files not found, attempting to download them..."
-
-  # Request to download the ISO files.
-  downloadMedias
-fi
-
-echo "Looking for installation media..."
-name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
-name=${name##*/}
-name=${name%.*.*}
-
-if [ -z $name ]; then
-  echo "No installation media found. Unable to install, stopping script..."
-  exit 2
-fi
-echo "Found!"
-readonly ISO_NAME="$name"
-
-readonly DST_DIR="$HOME/VirtualBox VMs/"
-readonly VM_DIR="$DST_DIR$VM"
-readonly DST_VOL="/Volumes/$VM"
-readonly DST_CLOVER="${MEDIA_DIR}${ISO_NAME}-Clover"
-readonly DST_ISO="${MEDIA_DIR}$ISO_NAME.iso.cdr"
+DST_CLOVER=""
+DST_ISO=""
 ###############################################################################
+
+checkInstallationMedia() {
+  echo "Looking for installation media (ISO files)..."
+  # Extract ISO name
+  if [ ! -d "$MEDIA_DIR" ] && mkdir -p "$MEDIA_DIR" || [ -z "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]; then
+    echo "ISO files not found, attempting to download them..."
+
+    # Request to download the ISO files.
+    downloadMedias
+  fi
+
+  local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
+  name=${name##*/}
+  name=${name%.*.*}
+
+  if [ -z $name ]; then
+    echo "No installation media found. Unable to install, stopping script..."
+    return 1
+  else
+    echo "Found!"
+    DST_CLOVER="${MEDIA_DIR}${name}-Clover"
+    DST_ISO="${MEDIA_DIR}${name}.iso.cdr"
+  fi
+
+  return 0
+}
 
 runChecks() {
   info "Running checks (around 1 second)..." 0
@@ -313,6 +325,8 @@ runChecks() {
       exit 1
     fi
   fi
+
+  checkInstallationMedia
 
   if ! type vboxmanage >/dev/null 2>&1; then
     result "'VBoxManage' not installed. Trying to install automatically..." 0
@@ -435,10 +449,21 @@ runVM() {
 }
 
 stopVM() {
+  info "Requested to stop '$VM', proceding..."
   vboxmanage controlvm "$VM" poweroff soft || true
+  if [ "$?" == "0" ]; then
+    result "Done!"
+  fi
+  result ""
 }
 
 attach() {
+  checkInstallationMedia
+  if [ "$?" != "0" ]; then
+    echo "No ISOs to attach. Stopping script..."
+    exit 1
+  fi
+
   info "Attaching ISO files..." 0
   state="$(vboxmanage showvminfo $VM | grep 'State:')"
   if [[ $state =~ "running" ]]; then
