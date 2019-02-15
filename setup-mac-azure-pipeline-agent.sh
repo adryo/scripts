@@ -184,7 +184,7 @@ echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
 export FASTLANE_USER="$APPLE_USER"
 export FASTLANE_PASSWORD="$APPLE_PASSWORD"
 for i in "${XCODE_VERSIONS[@]}"; do
-  xcversion install "$i"
+  expectify "xcversion install $i"
 done
 
 if ! type brew >/dev/null 2>&1; then
