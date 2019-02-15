@@ -439,6 +439,8 @@ runVM() {
 
     if [ $? -eq 0 ]; then
       result "Virtual Machine running..."
+      info "Connect via RDP to '$IP_ADDRESS:$RDP_PORT'"
+      info "Connect via SSH to '$IP_ADDRESS:$SSH_PORT'"
     else
       result "Unable to start Virtual Machine, probably it means that virtualization is not enabled."
       exit 1
