@@ -535,10 +535,11 @@ prepareOS() {
 }
 
 runSnapshot() {
-  NOW=$(date +"%m-%d-%Y%T")
-  SNAPSHOT_DESCRIPTION="Snapshot taken on $NOW"
-
-  vboxmanage snapshot $VM take "${name}_${NOW}" --description "${VM_SNAPSHOT_TAG}$SNAPSHOT_DESCRIPTION"
+  local readonly NOW=$(date +"%m-%d-%Y%T")
+  local readonly SNAPSHOT_DESCRIPTION="Snapshot taken on $NOW"
+  local readonly default="$VM-$NOW"
+  local readonly name=${VM_SNAPSHOT_TAG:-$default}
+  vboxmanage snapshot $VM take "$name" --description "$SNAPSHOT_DESCRIPTION"
 }
 
 cleanup() {
