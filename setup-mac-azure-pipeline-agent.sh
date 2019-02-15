@@ -84,6 +84,7 @@ while [ "$#" -ne 0 ]; do
     echo ""
     echo "Available options:"
     echo "--help: Display the usage tips plus tasks and options descriptions."
+    echo "--install-script: Installs a shortcut of the current script in the Home directory, making you able to use the script like: ~/script.sh [tasks] [options]."
     echo "--logon-password: Sets the server credential for the script to act as sudo user while needed."
     echo "--apple-account: A valid developer account email to download and install Xcode."
     echo "--apple-password: The matching password to handle authentication through apple services."
