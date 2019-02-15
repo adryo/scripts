@@ -333,6 +333,32 @@ runChecks() {
     result "'VBoxManage' not installed. Trying to install automatically..." 0
     installVBox || exit 2
   fi
+
+  expect_digit "vboxmanage list extpacks"
+  if [ "$?" == "0" ]; then
+    result "'VBox Extenpack' not installed. Trying to install automatically..." 0
+    installVBoxExtenpack || exit 2
+  fi
+}
+
+installVBoxExtenpack(){
+  local readonly VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
+  local readonly  EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
+
+  info "Installed VBox version $VB_VERSION." 0
+
+  if [ ! -f "./$EXT_PACK" ]; then
+    info "Attempting to download VirtualBox extensions pack version $VB_VERSION" 0
+    wget "http://download.virtualbox.org/virtualbox/$VB_VERSION/$EXT_PACK"
+
+    if [ $? -eq 0 ]; then
+      result "Extension packs downloaded. Proceeding with installation..."
+      expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+    else
+      result "Unable to download Extension Packs. Stoping installation."
+      exit 1
+    fi
+  fi
 }
 
 installVBox() {
@@ -357,24 +383,6 @@ installVBox() {
   expectify "sudo apt update"
   expectify "sudo apt install virtualbox-5.2 -y"
   result "Done!"
-
-  VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
-  EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
-
-  info "Installed version $VB_VERSION." 0
-
-  if [ ! -f "./$EXT_PACK" ]; then
-    info "Attempting to download VirtualBox extensions pack version $VB_VERSION" 0
-    wget "http://download.virtualbox.org/virtualbox/$VB_VERSION/$EXT_PACK"
-
-    if [ $? -eq 0 ]; then
-      result "Extension packs downloaded. Proceeding with installation..."
-      expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
-    else
-      result "Unable to download Extension Packs. Stoping installation."
-      exit 1
-    fi
-  fi
 
   # Add user to vboxusers group
   expectify "sudo usermod -a -G vboxusers $USER"
