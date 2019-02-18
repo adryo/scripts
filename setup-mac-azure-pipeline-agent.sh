@@ -14,6 +14,7 @@ SERVER_URL=""
 TOKEN=""
 POOL=""
 TIMEZONE=""
+INSTALL_XCODE=1
 XCODE_VERSIONS=(10.1)
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
@@ -68,6 +69,9 @@ while [ "$#" -ne 0 ]; do
     TIMEZONE=$1
     shift
     ;;
+  --skip-xcode-install)
+    INSTALL_XCODE=0
+  ;;
   --install-xcode)
     IN="$(echo -e "$1" | tr -d '[:space:]')"
     IFS=',' read -ra VERS <<<"$IN"
@@ -94,6 +98,7 @@ while [ "$#" -ne 0 ]; do
     echo "--token: A valid PAT to use during agent configuration."
     echo "--pool-name: The pool where this agent will belong. Default is 'default'."
     echo "--timezone: The timezone to configure the agent with. Default is 'Europe/Paris'."
+    echo "--skip-xcode-install: Avoids the xcode installation."
     echo "--install-xcode: By default this script will install always Xcode 10.1, but other versions can be set to be automatically installed too. Set the version number separated by comma, ex: '--install-xcode 9.4,10.0'."
     exit 0
     ;;
@@ -156,37 +161,40 @@ if ! type brew >/dev/null 2>&1; then
   rm ~/install
 fi
 
-## Install XCode-Install gem
-if ! type xcversion >/dev/null 2>&1; then
-  echo "Installing xcversion ..."
-  ## This will require you provide an Apple Developer Account's credentials
-  ## More info at: https://github.com/KrauseFx/xcode-install
-  curl -sL -O https://github.com/neonichu/ruby-domain_name/releases/download/v0.5.99999999/domain_name-0.5.99999999.gem
+# Check if Xcode is set to be installed.
+if [ "$INSTALL_XCODE" == "1" ]; then
+  ## Install XCode-Install gem
+  if ! type xcversion >/dev/null 2>&1; then
+    echo "Installing xcversion ..."
+    ## This will require you provide an Apple Developer Account's credentials
+    ## More info at: https://github.com/KrauseFx/xcode-install
+    curl -sL -O https://github.com/neonichu/ruby-domain_name/releases/download/v0.5.99999999/domain_name-0.5.99999999.gem
 
-  # Global Variables
-  expectify "sudo gem install domain_name-0.5.99999999.gem"
-  expectify "sudo gem install --conservative xcode-install"
+    # Global Variables
+    expectify "sudo gem install domain_name-0.5.99999999.gem"
+    expectify "sudo gem install --conservative xcode-install"
 
-  rm -f domain_name-0.5.99999999.gem
-  echo "Done!"
+    rm -f domain_name-0.5.99999999.gem
+    echo "Done!"
+  fi
+
+  if [ -z "$APPLE_USER" ]; then
+    read -p "Apple account's email: " APPLE_USER
+  fi
+
+  if [ -z "$APPLE_PASSWORD" ]; then
+    read -s -p "Password (for $APPLE_USER): " APPLE_PASSWORD
+    echo ""
+  fi
+
+  # Install Xcode 10.1
+  echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
+  export FASTLANE_USER="$APPLE_USER"
+  export FASTLANE_PASSWORD="$APPLE_PASSWORD"
+  for i in "${XCODE_VERSIONS[@]}"; do
+    expectify "xcversion install $i"
+  done
 fi
-
-if [ -z "$APPLE_USER" ]; then
-  read -p "Apple account's email: " APPLE_USER
-fi
-
-if [ -z "$APPLE_PASSWORD" ]; then
-  read -s -p "Password (for $APPLE_USER): " APPLE_PASSWORD
-  echo ""
-fi
-
-# Install Xcode 10.1
-echo "Xcode versions to install: ${XCODE_VERSIONS[@]}"
-export FASTLANE_USER="$APPLE_USER"
-export FASTLANE_PASSWORD="$APPLE_PASSWORD"
-for i in "${XCODE_VERSIONS[@]}"; do
-  expectify "xcversion install $i"
-done
 
 if ! type brew >/dev/null 2>&1; then
   echo "Unable to find Homebrew installation. Stoping the script..."
