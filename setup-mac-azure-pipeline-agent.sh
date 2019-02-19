@@ -152,13 +152,14 @@ installAzureAgent(){
     fi
   fi
 
+  mkdir -p "$AGENT_INSTANCE"
   local readonly AZURE_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${AZURE_AGENT_VERSION}.tar.gz"
   while [ ! -f "$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE" ]; do
     echo "Downloading Azure pipeline agent v${AZURE_AGENT_VERSION}..."
     curl -Lk https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE -o "$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE"
     echo "Done!"
     echo "Installing the agent..."  
-    mkdir -p "$AGENT_INSTANCE" && cd "$AGENT_INSTANCE"
+    cd "$AGENT_INSTANCE"
     tar xzf ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
     sleep 10
