@@ -134,35 +134,35 @@ installAzureAgent(){
     TIMEZONE="Europe/Paris"
   fi
 
-  local readonly AZURE_AGENT_HOME="~/AzureAgents"
+  local readonly AZURE_AGENT_HOME="AzureAgents"
   local readonly AGENT_INSTANCE="$AZURE_AGENT_HOME/agent01"
 
-  if [ -d $AZURE_AGENT_HOME ]; then
+  if [ -d ~/$AZURE_AGENT_HOME ]; then
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
-    if [ -f "$AGENT_INSTANCE/svc.sh" ]; then
+    if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
       echo "Found service file. Trying to uninstall.."
       ~/$AZURE_AGENT_HOME/agent01/svc.sh install
       if [ $? = 0 ]; then
         echo "Uninstalled!"
       fi
     fi
-    rm -rf "$AZURE_AGENT_HOME"
+    rm -rf ~/$AZURE_AGENT_HOME
     if [ $? = 0 ]; then
       echo "Agent dir successfully removed!"
     fi
   fi
 
-  mkdir -p "$AGENT_INSTANCE"
+  mkdir -p ~/$AGENT_INSTANCE
   local readonly AZURE_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${AZURE_AGENT_VERSION}.tar.gz"
-  while [ ! -f "$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE" ]; do
+  while [ ! -f ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE ]; do
     echo "Downloading Azure pipeline agent v${AZURE_AGENT_VERSION}..."
-    curl -Lk https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE -o "$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE"
+    curl -Lk https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE -o ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
     echo "Installing the agent..."  
-    cd "$AGENT_INSTANCE"
+    cd ~/$AGENT_INSTANCE
     tar xzf ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
-    sleep 10
+    sleep 1
   done
   
   echo "Configuring the agent to be used..."
@@ -176,7 +176,7 @@ installAzureAgent(){
   #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
   ~/$AZURE_AGENT_HOME/agent01/config.sh --unattended --replace --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
 
-  if [ -f "$AGENT_INSTANCE/svc.sh" ]; then
+  if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
     ~/$AZURE_AGENT_HOME/agent01/svc.sh install
     # Link the .bash_profile file to load all ENV and configurations
     printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AZURE_AGENT_HOME/agent01/runsvc.sh
