@@ -139,9 +139,16 @@ installAzureAgent(){
 
   if [ -d $AZURE_AGENT_HOME ]; then
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
+    if [ -f "$AGENT_INSTANCE/svc.sh" ]; then
+      echo "Found service file. Trying to uninstall.."
+      ~/$AZURE_AGENT_HOME/agent01/svc.sh install
+      if [ $? = 0 ]; then
+        echo "Uninstalled!"
+      fi
+    fi
     rm -rf "$AZURE_AGENT_HOME"
     if [ $? = 0 ]; then
-      echo "Successfully removed!"
+      echo "Agent dir successfully removed!"
     fi
   fi
 
@@ -166,7 +173,7 @@ installAzureAgent(){
   #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens)
   #The Agent Pool should be Default for production or TestAgents for testing.
   #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
-  ~/$AZURE_AGENT_HOME/agent01/config.sh --unattended --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
+  ~/$AZURE_AGENT_HOME/agent01/config.sh --unattended --replace --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
 
   if [ -f "$AGENT_INSTANCE/svc.sh" ]; then
     ~/$AZURE_AGENT_HOME/agent01/svc.sh install
