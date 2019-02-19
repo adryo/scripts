@@ -52,7 +52,7 @@ while [ "$#" -ne 0 ]; do
   --skip-agent-config)
     CONFIGURE_AZURE_PIPELINE_AGENT=0
     ;;
-  --skip-adroid)
+  --skip-android)
     INSTALL_ANDROID=0
     ;;
   --agent-name)
