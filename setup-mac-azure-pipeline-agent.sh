@@ -104,7 +104,7 @@ while [ "$#" -ne 0 ]; do
     echo "--token: A valid PAT to use during agent configuration."
     echo "--pool-name: The pool where this agent will belong. Default is 'default'."
     echo "--timezone: The timezone to configure the agent with. Default is 'Europe/Paris'."
-    echo "--skip-xcode-install: Avoids the android sdk, ndk, tools installation and configuration."
+    echo "--skip-android: Avoids the android sdk, ndk, tools installation and configuration."
     echo "--skip-xcode-install: Avoids the xcode installation."
     echo "--install-xcode: By default this script will install always Xcode 10.1, but other versions can be set to be automatically installed too. Set the version number separated by comma, ex: '--install-xcode 9.4,10.0'."
     exit 0
