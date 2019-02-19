@@ -8,6 +8,8 @@ APPLE_USER=""
 APPLE_PASSWORD=""
 
 # TFS Variables
+# VSTS Agent Variables
+readonly AZURE_AGENT_VERSION="2.147.1"
 AGENT_NAME="VM-$GLOBAL_PLATFORM_OS-Mojave01"
 CONFIGURE_AZURE_PIPELINE_AGENT=1
 SERVER_URL=""
@@ -16,6 +18,7 @@ POOL=""
 TIMEZONE=""
 INSTALL_XCODE=1
 XCODE_VERSIONS=(10.1)
+INSTALL_ANDROID=1
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
 while [ "$#" -ne 0 ]; do
@@ -48,6 +51,9 @@ while [ "$#" -ne 0 ]; do
     ;;
   --skip-agent-config)
     CONFIGURE_AZURE_PIPELINE_AGENT=0
+    ;;
+  --skip-adroid)
+    INSTALL_ANDROID=0
     ;;
   --agent-name)
     AGENT_NAME=$1
@@ -98,6 +104,7 @@ while [ "$#" -ne 0 ]; do
     echo "--token: A valid PAT to use during agent configuration."
     echo "--pool-name: The pool where this agent will belong. Default is 'default'."
     echo "--timezone: The timezone to configure the agent with. Default is 'Europe/Paris'."
+    echo "--skip-xcode-install: Avoids the android sdk, ndk, tools installation and configuration."
     echo "--skip-xcode-install: Avoids the xcode installation."
     echo "--install-xcode: By default this script will install always Xcode 10.1, but other versions can be set to be automatically installed too. Set the version number separated by comma, ex: '--install-xcode 9.4,10.0'."
     exit 0
@@ -109,8 +116,69 @@ while [ "$#" -ne 0 ]; do
   esac
 done
 
-# VSTS Agent Variables
-readonly AZURE_AGENT_VERSION="2.144.2"
+installAzureAgent(){
+  if [ -z "$SERVER_URL" ]; then
+    read -p "TFS server's url: " SERVER_URL
+  fi
+
+  if [ -z "$TOKEN" ]; then
+    read -s -p "Insert PAT: " TOKEN
+    echo ""
+  fi
+
+  if [ -z "$POOL" ]; then
+    POOL="default"
+  fi
+
+  if [ -z "$TIMEZONE" ]; then
+    TIMEZONE="Europe/Paris"
+  fi
+
+  local readonly AZURE_AGENT_HOME="~/AzureAgents"
+  local readonly AGENT_INSTANCE="$AZURE_AGENT_HOME/agent01"
+
+  if [ -d $AZURE_AGENT_HOME ]; then
+    echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
+    rm -rf "$AZURE_AGENT_HOME"
+    if [ $? = 0 ]; then
+      echo "Successfully removed!"
+    fi
+  fi
+
+  local readonly AZURE_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${AZURE_AGENT_VERSION}.tar.gz"
+  while [ ! -f "$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE" ]; do
+    echo "Downloading Azure pipeline agent v${AZURE_AGENT_VERSION}..."
+    curl https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE --output "$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE"
+    echo "Done!"
+    echo "Installing the agent..."  
+    mkdir -p "$AGENT_INSTANCE" && cd "$AGENT_INSTANCE"
+    tar xzf ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
+    echo "Done!"
+    sleep 1
+  done
+  
+  echo "Configuring the agent to be used..."
+  cd "$AGENT_INSTANCE"
+  #Step 4: Configuring this agent at TFS server
+  # Set the timezone before configure
+  expectify "sudo systemsetup -settimezone $TIMEZONE"
+
+  #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens)
+  #The Agent Pool should be Default for production or TestAgents for testing.
+  #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
+  ~/$AZURE_AGENT_HOME/agent01/config.sh --unattended --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
+
+  if [ -f "$AGENT_INSTANCE/svc.sh" ]; then
+    ~/$AZURE_AGENT_HOME/agent01/svc.sh install
+    # Link the .bash_profile file to load all ENV and configurations
+    printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AZURE_AGENT_HOME/agent01/runsvc.sh
+    echo "Done!"
+    # Start the service
+    ~/$AZURE_AGENT_HOME/agent01/svc.sh start
+  else
+    echo "Unable to configure the service. Check logs for more info."
+  fi
+}
 
 echo "Starting script..."
 
@@ -194,6 +262,8 @@ if [ "$INSTALL_XCODE" == "1" ]; then
   for i in "${XCODE_VERSIONS[@]}"; do
     expectify "xcversion install $i"
   done
+else
+  echo "Skipping Xcode installation..."
 fi
 
 if ! type brew >/dev/null 2>&1; then
@@ -210,41 +280,44 @@ expectify "brew cask install java8"
 #Step 2: Add JAVA_HOME into env
 echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
 
-##Android SDK##
-#Step 1: Install SDK
-brew tap homebrew/cask
-expectify "brew cask install android-sdk"
-expectify "brew cask install android-ndk"
+if [ "$INSTALL_ANDROID" == "1" ]; then
+  ##Android SDK##
+  #Step 1: Install SDK
+  brew tap homebrew/cask
+  expectify "brew cask install android-sdk"
+  expectify "brew cask install android-ndk"
 
-#Installing all build-tools and platforms
-sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >>out.txt
-isAvailable=false
-while IFS='' read -r line || [[ -n "$line" ]]; do
-  if [[ ($line == *"Available"*) || ("$isAvailable" == true) ]]; then
-    isAvailable=true
-    if [[ ($line == *"build-tools;"*) || ($line == *"platforms;"*) ]]; then
-      yes | sdkmanager ""$line""
+  #Installing all build-tools and platforms
+  sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >>out.txt
+  isAvailable=false
+  while IFS='' read -r line || [[ -n "$line" ]]; do
+    if [[ ($line == *"Available"*) || ("$isAvailable" == true) ]]; then
+      isAvailable=true
+      if [[ ($line == *"build-tools;"*) || ($line == *"platforms;"*) ]]; then
+        yes | sdkmanager ""$line""
+      fi
     fi
-  fi
 
-done <"out.txt"
+  done <"out.txt"
 
-sdkmanager --update
+  sdkmanager --update
 
-#Step 3: Configure env
-echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
-echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
-echo 'export ANDROID_HOME="$ANDROID_SDK_ROOT"' >>~/.bash_profile
-echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools"' >>~/.bash_profile
+  #Step 3: Configure env
+  echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
+  echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
+  echo 'export ANDROID_HOME="$ANDROID_SDK_ROOT"' >>~/.bash_profile
+  echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools"' >>~/.bash_profile
 
-# SymLink sdk for Android Studio
-mkdir -p ~/Library/Android
-ln -s /usr/local/share/android-sdk ~/Library/Android
-mv ~/Library/Android/android-sdk ~/Library/Android/sdk
+  # SymLink sdk for Android Studio
+  mkdir -p ~/Library/Android
+  ln -s /usr/local/share/android-sdk ~/Library/Android
+  mv ~/Library/Android/android-sdk ~/Library/Android/sdk
 
-ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
-mv ~/Library/Android/android-sdk/android-ndk /usr/local/share/android-sdk/ndk-bundle
-
+  ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
+  mv ~/Library/Android/android-sdk/android-ndk /usr/local/share/android-sdk/ndk-bundle
+else
+  echo "Skipping android installation..."
+fi
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
@@ -261,7 +334,7 @@ expectify "sudo gem install fastlane"
 echo 'export PATH="$HOME/.fastlane/bin:$PATH"' >>~/.bash_profile
 echo 'export LC_ALL="en_US.UTF-8"' >>~/.bash_profile
 echo 'export LANG="en_US.UTF-8"' >>~/.bash_profile
-echo 'export LANGUAGE="en_US.UTF-8"' >>~/.bash_profile
+echo 'export LANGUAGE="en_US.UTF-8"' >>~/.bash_profile
 
 # Register xcode-select for remotely use
 rule="$USER  ALL=NOPASSWD:/usr/bin/xcode-select"
@@ -296,51 +369,5 @@ expectify "brew install git-lfs"
 
 #Step 3: Creating an agent
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
-  if [ -z "$SERVER_URL" ]; then
-    read -p "TFS server's url: " SERVER_URL
-  fi
-
-  if [ -z "$TOKEN" ]; then
-    read -s -p "Insert PAT: " TOKEN
-    echo ""
-  fi
-
-  if [ -z "$POOL" ]; then
-    POOL="default"
-  fi
-
-  if [ -z "$TIMEZONE" ]; then
-    TIMEZONE="Europe/Paris"
-  fi
-
-  echo "Downloading Azure pipeline agent v${AZURE_AGENT_VERSION}..."
-  readonly AZURE_AGENT_TARGZ_FILE="vsts-agent-osx-x64-${AZURE_AGENT_VERSION}.tar.gz"
-
-  AZURE_AGENT_HOME="AzureAgents"
-
-  mkdir ~/$AZURE_AGENT_HOME && cd ~/$AZURE_AGENT_HOME
-
-  curl https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE --output $AZURE_AGENT_TARGZ_FILE
-  echo "Done!"
-  echo "Installing the agent..."
-  mkdir ~/$AZURE_AGENT_HOME/agent01 && cd ~/$AZURE_AGENT_HOME/agent01
-  tar xzf ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
-  echo "Done!"
-  echo "Configuring the agent to be used..."
-  cd ~/$AZURE_AGENT_HOME/agent01
-  #Step 4: Configuring this agent at TFS server
-  # Set the timezone before configure
-  expectify "sudo systemsetup -settimezone $TIMEZONE"
-
-  #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens)
-  #The Agent Pool should be Default for production or TestAgents for testing.
-  #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
-  ~/$AZURE_AGENT_HOME/agent01/config.sh --unattended --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
-  ~/$AZURE_AGENT_HOME/agent01/svc.sh install
-
-  # Link the .bash_profile file to load all ENV and configurations
-  printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AZURE_AGENT_HOME/agent01/runsvc.sh
-  echo "Done!"
-  # Start the service
-  ~/$AZURE_AGENT_HOME/agent01/svc.sh start
+  installAzureAgent
 fi
