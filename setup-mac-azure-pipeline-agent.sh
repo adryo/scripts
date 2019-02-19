@@ -166,7 +166,6 @@ installAzureAgent(){
   done
   
   echo "Configuring the agent to be used..."
-  cd "$AGENT_INSTANCE"
   #Step 4: Configuring this agent at TFS server
   # Set the timezone before configure
   expectify "sudo systemsetup -settimezone $TIMEZONE"
@@ -379,3 +378,6 @@ expectify "brew install git-lfs"
 if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
   installAzureAgent
 fi
+
+# Heading to home dir
+cd ~
