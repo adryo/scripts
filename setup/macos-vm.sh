@@ -18,6 +18,7 @@ VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integ
 VM_CPU="2"    # Can be changed using option --vm-cpu
 VM_SNAPSHOT_TAG=""
 readonly VM_VRAM="128"
+readonly VBOX_VERSION="6.0"
 readonly VM_DIR="$HOME/VirtualBox VMs/$VM"
 
 RDP_PORT="3389" # Can be changed using option --vm-rdp-port
@@ -358,7 +359,7 @@ installVBoxExtenpack(){
 
     if [ $? -eq 0 ]; then
       result "Extension packs downloaded. Proceeding with installation..."
-      expectify "sudo vboxmanage extpack install ./$EXT_PACK --accept-license=$EXT_PACK_LICENSE --replace"
+      expectify "sudo vboxmanage extpack install ./$EXT_PACK --replace" # --accept-license=$EXT_PACK_LICENSE
     else
       result "Unable to download Extension Packs. Stoping installation."
       exit 1
@@ -369,8 +370,8 @@ installVBoxExtenpack(){
 installVBox() {
   info "Attempting to obtain VirtualBox keys..."
   wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >>oracle_vbox_2016.asc
-  expectify "sudo apt-key add oracle_vbox_2016.asc"
   wget https://www.virtualbox.org/download/oracle_vbox.asc -O- >>oracle_vbox.asc
+  expectify "sudo apt-key add oracle_vbox_2016.asc"  
   expectify "sudo apt-key add oracle_vbox.asc"
   result "Done!"
   info "Setting VBox repo source..."
@@ -386,7 +387,7 @@ installVBox() {
 
   info "Installing Virtual Box package..."
   expectify "sudo apt update"
-  expectify "sudo apt install virtualbox-5.2 -y"
+  expectify "sudo apt install virtualbox-${VBOX_VERSION} -y"
   result "Done!"
 
   # Add user to vboxusers group
