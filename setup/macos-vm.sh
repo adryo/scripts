@@ -369,23 +369,23 @@ installVBoxExtenpack(){
 
 installVBox() {
   info "Attempting to obtain VirtualBox keys..."
-  wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >>oracle_vbox_2016.asc
-  wget https://www.virtualbox.org/download/oracle_vbox.asc -O- >>oracle_vbox.asc
-  expectify "sudo apt-key add oracle_vbox_2016.asc"  
+  wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >>oracle_vbox_2016.asc
+  expectify "sudo apt-key add oracle_vbox_2016.asc"
+  wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- >>oracle_vbox.asc
   expectify "sudo apt-key add oracle_vbox.asc"
   result "Done!"
-  info "Setting VBox repo source..."
+  info "Setting VirtualBox repo source..."
   # Register virtual-box source
   rule="deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib"
   expectify "sudo /bin/sh -c \"echo $rule >> /etc/apt/sources.list.d/virtualbox.list\""
   result "Done!"
 
-  info "Installing Virtual Box requirements..."
+  info "Installing VirtualBox requirements..."
   expectify "sudo apt update"
   expectify "sudo apt -y install gcc make linux-headers-$(uname -r) dkms"
   result "Done!"
 
-  info "Installing Virtual Box package..."
+  info "Installing VirtualBox package..."
   expectify "sudo apt update"
   expectify "sudo apt install virtualbox-${VBOX_VERSION} -y"
   result "Done!"
