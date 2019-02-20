@@ -360,7 +360,7 @@ installVBoxExtenpack(){
 
     if [ $? -eq 0 ]; then
       result "Extension packs downloaded. Proceeding with installation..."
-      expectify "sudo vboxmanage extpack install ./$EXT_PACK --replace" # --accept-license=$EXT_PACK_LICENSE
+      expectify "sudo vboxmanage extpack install ./$EXT_PACK --replace --accept-license=$EXT_PACK_LICENSE"
     else
       result "Unable to download Extension Packs. Stoping installation."
       exit 1
