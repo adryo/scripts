@@ -41,6 +41,8 @@ readonly SCRIPTPATH="$(
 
 MEDIA_DIR="$HOME/installer/"
 
+mkdir -p $MEDIA_DIR
+
 # Array to collect the tasks to execute
 tasks=()
 
