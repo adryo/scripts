@@ -349,7 +349,7 @@ runChecks() {
 
 installVBoxExtenpack(){
   local VB_VERSION="$(virtualbox --help | head -n 1 | awk '{print $NF}')" # Gets the version of Virtualbox
-  VBOX_VERSION="${VB_VERSION/v/}"
+  VB_VERSION="${VB_VERSION/v/}"
   local readonly  EXT_PACK="Oracle_VM_VirtualBox_Extension_Pack-$VB_VERSION.vbox-extpack"
 
   info "Installed VBox version $VB_VERSION." 0
