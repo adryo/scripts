@@ -32,7 +32,10 @@ FTP_DIR=""               # Can be set using --ftp-dir
 # Other variables
 PREPARATION_TIMEOUT=1800 # 30 minutes
 readonly EXT_PACK_LICENSE="56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb"
-readonly IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+
+# Extract IP Address
+[[ "$GLOBAL_PLATFORM_OS" = "Darwin" ]] && IP_ADDRESS=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d " " -f2) || IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+
 readonly PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"
 readonly SCRIPTPATH="$(
   cd "$(dirname "$0")" || exit
