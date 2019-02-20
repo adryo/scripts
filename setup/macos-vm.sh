@@ -249,16 +249,16 @@ downloadMedias() {
     echo ""
   fi
 
-  local dowloaded=0
+  local downloaded=0
   echo "Download mode is set to: '$DOWNLOAD_MODE'"
   echo "Connecting to ${FTP_HOST}${FTP_DIR}, with credentials: $FTP_USER"
   if [ -z "$DOWNLOAD_MODE" ] || [ "ftp" == "$DOWNLOAD_MODE" ]; then
     wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
-    dowloaded=1
+    downloaded=1
   else
     if [ "scp" == "$DOWNLOAD_MODE" ]; then
       run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD"
-      dowloaded=1
+      downloaded=1
     fi
   fi
 
