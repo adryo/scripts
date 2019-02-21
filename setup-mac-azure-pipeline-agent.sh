@@ -309,6 +309,8 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
 
   sdkmanager --update
 
+  expectify "yes | sudo sdkmanager --licenses"
+
   #Step 3: Configure env
   echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
   echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
@@ -325,6 +327,7 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
 else
   echo "Skipping android installation..."
 fi
+
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
