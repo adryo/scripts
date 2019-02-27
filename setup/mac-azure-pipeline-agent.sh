@@ -141,7 +141,7 @@ installAzureAgent(){
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
     if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
       echo "Found service file. Trying to uninstall.."
-      ~/$AZURE_AGENT_HOME/agent01/svc.sh install
+      ~/$AGENT_INSTANCE/svc.sh install
       if [ $? = 0 ]; then
         echo "Uninstalled!"
       fi
@@ -173,15 +173,20 @@ installAzureAgent(){
   #The token need to be generated from the security espace of a builder user https://tfs.copsonic.com/tfs/DefaultCollection/_details/security/tokens)
   #The Agent Pool should be Default for production or TestAgents for testing.
   #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
-  ~/$AZURE_AGENT_HOME/agent01/config.sh --unattended --replace --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
+  ~/$AGENT_INSTANCE/config.sh --unattended --replace --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
 
   if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
-    ~/$AZURE_AGENT_HOME/agent01/svc.sh install
+    ~/$AGENT_INSTANCE/svc.sh install
     # Link the .bash_profile file to load all ENV and configurations
-    printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AZURE_AGENT_HOME/agent01/runsvc.sh
+    printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AGENT_INSTANCE/runsvc.sh
     echo "Done!"
+    # Adding automatic mantainance
+    crontab -l | { cat; echo "* 4 * * * rm -rf ~/$AGENT_INSTANCE/_work"; } | crontab -
+    if [ "$?" == "0" ]; then
+      echo "Automatic mantainance routine installed!"
+    fi
     # Start the service
-    ~/$AZURE_AGENT_HOME/agent01/svc.sh start
+    ~/$AGENT_INSTANCE/svc.sh start
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
