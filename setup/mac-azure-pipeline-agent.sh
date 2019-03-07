@@ -198,14 +198,18 @@ install_xcodeclt() {
   printf '%s\n' "$1"
   echo "Requesting installation..."
   # Download and install Xcode Command Line Tools
-  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+  local readonly file="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+  touch $file
   PROD=$(softwareupdate -l |
     grep "\*.*Command Line" |
     head -n 1 | awk -F"*" '{print $2}' |
     sed -e 's/^ *//' |
     tr -d '\n')
   softwareupdate -i "$PROD" --verbose
-  rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+
+  if [ -f $file ]; then
+    rm $file
+  fi
 }
 
 # Check for Xcode Command Line Tools
