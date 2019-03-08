@@ -141,8 +141,9 @@ installAzureAgent(){
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
     if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
       echo "Found service file. Trying to uninstall.."
-      ~/$AGENT_INSTANCE/svc.sh install
-      if [ $? = 0 ]; then
+      ~/$AGENT_INSTANCE/svc.sh uninstall
+      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist"; then
+        exectify "sudo rm /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
         echo "Uninstalled!"
       fi
     fi
@@ -177,9 +178,12 @@ installAzureAgent(){
 
   if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
     ~/$AGENT_INSTANCE/svc.sh install
+    echo "Installing Launch daemon"
+    exectify "sudo cp ~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+    echo "Done!"
     # Link the .bash_profile file to load all ENV and configurations
     printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AGENT_INSTANCE/runsvc.sh
-    echo "Done!"
+    echo "Agent installed!"
     # Adding automatic mantainance
     crontab -l | { cat; echo "* 4 * * * rm -rf ~/$AGENT_INSTANCE/_work"; } | crontab -
     if [ "$?" == "0" ]; then
