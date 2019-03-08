@@ -326,13 +326,13 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
   echo 'export ANDROID_HOME="$ANDROID_SDK_ROOT"' >>~/.bash_profile
   echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools"' >>~/.bash_profile
 
-  # SymLink sdk for Android Studio
+  # SymLink sdk for Android
   mkdir -p ~/Library/Android
   ln -s /usr/local/share/android-sdk ~/Library/Android
   mv ~/Library/Android/android-sdk ~/Library/Android/sdk
 
   ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
-  mv ~/Library/Android/android-sdk/android-ndk /usr/local/share/android-sdk/ndk-bundle
+  mv ~/Library/Android/sdk/android-ndk ~/Library/Android/sdk/ndk-bundle
 else
   echo "Skipping android installation..."
 fi
