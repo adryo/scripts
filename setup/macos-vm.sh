@@ -12,6 +12,7 @@ source /dev/stdin <<<"$(curl --insecure -sS https://raw.githubusercontent.com/ad
 
 # Global Variables
 VM=""                # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
+VM_HDD_TYPE="Fixed"
 VM_HDD_SIZE="102400" # 100 Gb Can be changed using option --vm-hdd-size in Gb, ex. (integer) 100, 120, 80.
 VM_RES="1366x768"
 VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integer) 6, 8, 4.
@@ -107,6 +108,10 @@ while [ "$#" -ne 0 ]; do
     VM=$1
     shift
     ;;
+  --vm-hdd-type)
+    VM_HDD_TYPE="$1"
+    shift
+    ;;
   --vm-hdd-size)
     VM_HDD_SIZE=$(expr $1 \* 1024)
     shift
@@ -174,6 +179,7 @@ while [ "$#" -ne 0 ]; do
     echo "--scp-dir: Sets the scp dir where the ISO files are hosted, to download them if they are not present in the ubuntu host. Must be set in this format 'dirname/'."
     echo "--vm-name: Sets the name of the VM. By default VM takes the name according the installation media file name. Ex. MacOS-Mojave."
     echo "--vm-hdd-size: Sets the amount (integer) of Gigabytes to set in the VM's HDD. Default to 100 Gb."
+    echo "--vm-hdd-type: Sets the hdd type to be used when creating Virtual HDD medias. By default is 'Fixed' but can be switched to 'Standard' which creates a dynamic allocation disk."
     echo "--vm-ram-size: Sets the amount (integer) of Gigabytes to set in VM's RAM. Default to 4 Gb."
     echo "--vm-cpu: Sets the amount of CPU to set in the VM's instance. Default is 2."
     echo "--vm-rdp-port: Sets the port to connect via RDP to the VM's instance while it's running. Default is 3389."
@@ -410,8 +416,8 @@ createVM() {
   fi
   info "Creating VM HDD '$VM_DIR/$VM.vdi' (around 5 seconds)..." 90
   if [ ! -e "$VM_DIR/$VM.vdi" ]; then
+    vboxmanage createhd --filename "$VM_DIR/$VM.vdi" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
     result "Done!"
-    vboxmanage createhd --filename "$VM_DIR/$VM.vdi" --variant Standard --size "$VM_HDD_SIZE"
   else
     result "already exists." 0
   fi
