@@ -416,6 +416,7 @@ createVM() {
   fi
   info "Creating VM HDD '$VM_DIR/$VM.vdi' (around 5 seconds)..." 90
   if [ ! -e "$VM_DIR/$VM.vdi" ]; then
+    echo "Creating disk with variant: '$VM_HDD_TYPE'"
     vboxmanage createhd --filename "$VM_DIR/$VM.vdi" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
     result "Done!"
   else
