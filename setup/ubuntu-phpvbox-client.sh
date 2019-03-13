@@ -38,8 +38,9 @@ if wget https://github.com/phpvirtualbox/phpvirtualbox/archive/$PHPVBOX_PACKAGE 
     if [ -z "$LOGON_PASSWORD" ]; then
         read -s -p "Password (for $USER): " LOGON_PASSWORD
         echo ""
-        sed -i -e "s/var \$password = 'pass';/var \$password = '$LOGON_PASSWORD';/g" /var/www/html/phpvirtualbox/config.php
     fi
+    
+    sed -i -e "s/var \$password = 'pass';/var \$password = '$LOGON_PASSWORD';/g" /var/www/html/phpvirtualbox/config.php
 
     echo "Setup credentials ..."
 
