@@ -207,7 +207,7 @@ checkVMName(){
     read -p "Enter VM's name. Press Ctrl+C to stop the script: " VM
   done
 }
-readonly DATE_STR="$(date +'%Y-%m-%d-%H:%M:%S')"
+readonly DATE_STR="$(date +'%Y-%m-%d-%Hhrs')"
 readonly FILE_LOG="${MEDIA_DIR}${DATE_STR}.log"
 # Logging #####################################################################
 if [ ! -f "$FILE_LOG" ]; then
