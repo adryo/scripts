@@ -42,7 +42,7 @@ if wget https://github.com/phpvirtualbox/phpvirtualbox/archive/$PHPVBOX_PACKAGE 
     
     sed -i -e "s/var \$password = 'pass';/var \$password = '$LOGON_PASSWORD';/g" /var/www/html/phpvirtualbox/config.php
 
-    echo "Setup credentials ..."
+    echo "Setting up credentials ..."
 
     sudo /bin/sh -c "echo VBOXWEB_USER=$USER >> /etc/default/virtualbox"
 
