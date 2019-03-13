@@ -618,8 +618,11 @@ main() {
     install) installVBox ;;
     installVBoxClient)
       echo "VBox Client depends on Virtual Box, so this task will check and automatically install if something is missing."
-      runChecks 
-      expectify "bash <\(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/ubuntu-phpvbox-client.sh\) $CURRENT_LOGON_PASSWORD"
+      runChecks
+      curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/ubuntu-phpvbox-client.sh -o ubuntu-phpvbox-client.sh
+      chmod +x ubuntu-phpvbox-client.sh
+      expectify "./ubuntu-phpvbox-client.sh $CURRENT_LOGON_PASSWORD"
+      rm ubuntu-phpvbox-client.sh
     ;;
     all) runChecks && createVM && prepareOS ;;
     esac
