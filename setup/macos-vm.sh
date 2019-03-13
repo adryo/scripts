@@ -202,12 +202,13 @@ if [ -z "$tasks" ]; then
   echo "No task to execute, the script will do nothing. Please use the option --help to see usage."
   exit 1
 fi
-
-while [ -z "$VM" ]; do
-  read -p "Enter VM's name or press Ctrl+c to stop the script: " VM
-done
-
-readonly FILE_LOG="${MEDIA_DIR}${VM}Installation.log"
+checkVMName(){
+  while [ -z "$VM" ]; do
+    read -p "Enter VM's name. Press Ctrl+C to stop the script: " VM
+  done
+}
+readonly DATE_STR="$(date +'%Y-%m-%d-%H:%M:%S')"
+readonly FILE_LOG="${MEDIA_DIR}${DATE_STR}.log"
 # Logging #####################################################################
 if [ ! -f "$FILE_LOG" ]; then
   touch $FILE_LOG
@@ -236,7 +237,7 @@ result() {
 }
 
 log() {
-  datestring="$(date +'%Y-%m-%d %H:%M:%S')"
+  local readonly datestring="$(date +'%Y-%m-%d %H:%M:%S')"
   printf '%s\n' "[$datestring] $1" >>"$FILE_LOG"
 }
 
@@ -410,6 +411,7 @@ installVBox() {
 }
 
 createVM() {
+  checkVMName || exit 0
   echo "Selected profile for setup: "
   echo "* VM's name: $VM"
   echo "* HDD Size: $((VM_HDD_SIZE / 1024)) Gb"
@@ -461,6 +463,7 @@ createVM() {
 }
 
 runVM() {
+  checkVMName || exit 0
   info "Starting VM '$VM' (3 minutes in the VM)..." 100
   if ! vboxmanage showvminfo "$VM" | grep "State:" | grep -i running >/dev/null; then
     result "Done!"
@@ -479,6 +482,7 @@ runVM() {
 }
 
 stopVM() {
+  checkVMName || exit 0
   info "Requested to stop '$VM', proceding..."
   vboxmanage controlvm "$VM" poweroff soft || true
   if [ "$?" == "0" ]; then
@@ -488,6 +492,7 @@ stopVM() {
 }
 
 attach() {
+  checkVMName || exit 0
   checkInstallationMedia
   if [ "$?" != "0" ]; then
     echo "No ISOs to attach. Stopping script..."
@@ -507,6 +512,7 @@ attach() {
 }
 
 detach() {
+  checkVMName || exit 0
   info "Detaching ISO files..." 0
   state="$(vboxmanage showvminfo $VM | grep 'State:')"
   if [[ $state =~ "running" ]]; then
@@ -563,6 +569,7 @@ prepareOS() {
 }
 
 runSnapshot() {
+  checkVMName || exit 0
   info "Requested to snapshot '$VM', proceding..."
   local readonly NOW=$(date +"%m-%d-%Y%T")
   local readonly SNAPSHOT_DESCRIPTION="Snapshot taken on $NOW"
@@ -576,6 +583,7 @@ runSnapshot() {
 }
 
 stashVM(){
+  checkVMName || exit 0
   info "Requested to remove '$VM', proceding..."
   vboxmanage unregistervm --delete "$VM"
   if [ "$?" == "0" ]; then
