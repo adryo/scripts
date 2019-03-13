@@ -161,6 +161,7 @@ while [ "$#" -ne 0 ]; do
     echo "stop: Stops the VM execution if it is running."
     echo "create: Creates a VM if there is no one created. When using this command is recommended execute the stash one before, to make sure the deletion of any previous VM configuration."
     echo "install: This command installs Virtual Box from the repo via command line. It may require sudo permission. Check option --logon-password for unattended execution."
+    echo "installVboxClient: This task will check and automatically install if something is missing.. It may require sudo permission. Check option --logon-password for unattended execution."
     echo "all: From a fresh installation state, this command executes a check, create and prepare commands in that order to make a clean VM configuration and proceed to prepare MacOS installation."
     echo ""
     echo "Available options:"
@@ -187,7 +188,7 @@ while [ "$#" -ne 0 ]; do
     echo "--vm-snapshot-tag: Sets a custom tag identifier for the snapshot. Only usable when executing snapshot task."
     exit 0
     ;;
-  all | check | info | run | stop | stash | snapshot | attach | detach | install | create | prepare)
+  all | check | info | run | stop | stash | snapshot | attach | detach | install | installVBoxClient | create | prepare)
     tasks+=($ARG)
     ;;
   *)
@@ -367,6 +368,7 @@ installVBoxExtenpack(){
     if [ $? -eq 0 ]; then
       result "Extension packs downloaded. Proceeding with installation..."
       expectify "sudo vboxmanage extpack install ./$EXT_PACK --replace --accept-license=$EXT_PACK_LICENSE"
+      rm $EXT_PACK
     else
       result "Unable to download Extension Packs. Stoping installation."
       exit 1
@@ -378,8 +380,12 @@ installVBox() {
   info "Attempting to obtain VirtualBox keys..."
   wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- >>oracle_vbox_2016.asc
   expectify "sudo apt-key add oracle_vbox_2016.asc"
+  rm oracle_vbox_2016.asc
+
   wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- >>oracle_vbox.asc
   expectify "sudo apt-key add oracle_vbox.asc"
+  rm oracle_vbox.asc
+
   result "Done!"
   info "Setting VirtualBox repo source..."
   # Register virtual-box source
@@ -610,6 +616,11 @@ main() {
     stop) stopVM ;;
     create) createVM ;;
     install) installVBox ;;
+    installVBoxClient)
+      echo "VBox Client depends on Virtual Box, so this task will check and automatically install if something is missing."
+      runChecks 
+      expectify "bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/ubuntu-phpvbox-client.sh) $CURRENT_LOGON_PASSWORD"
+    ;;
     all) runChecks && createVM && prepareOS ;;
     esac
   done
