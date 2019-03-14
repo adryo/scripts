@@ -456,11 +456,13 @@ createVM() {
     if [ ! -z "$?" ]; then
       echo "Cannot create the VM. Exitting..."
       exit 1
-    if
+    fi
+    
     result "Done!"
   else
     result "already exists." 0
   fi
+
   info "Creating VM '$VM' (around 2 seconds)..." 99
   if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
     result "Done!"
