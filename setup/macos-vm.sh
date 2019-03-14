@@ -452,6 +452,10 @@ createVM() {
       vboxmanage createhd --filename "$VM_HARD_DRIVE_FILE" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
     fi
 
+    if [ ! -z "$?" ]; then
+      echo "Cannot create the VM. Exitting..."
+      exit 1
+    if
     result "Done!"
   else
     result "already exists." 0
