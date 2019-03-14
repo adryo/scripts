@@ -18,6 +18,9 @@ VM_RES="1366x768"
 VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integer) 6, 8, 4.
 VM_CPU="2"    # Can be changed using option --vm-cpu
 VM_SNAPSHOT_TAG=""
+VM_RAW_DISK=""
+VM_RAW_DISK_PARTITIONS=""
+
 readonly VM_VRAM="128"
 readonly VBOX_VERSION="6.0"
 readonly VM_DIR="$HOME/VirtualBox VMs/$VM"
@@ -108,6 +111,14 @@ while [ "$#" -ne 0 ]; do
     VM=$1
     shift
     ;;
+  --vm-raw-disk)
+    VM_RAW_DISK="$1"
+    shift
+    ;;
+  --vm-raw-disk-partitions)
+    VM_RAW_DISK_PARTITIONS="$1"
+    shift
+    ;;
   --vm-hdd-type)
     VM_HDD_TYPE="$1"
     shift
@@ -161,7 +172,7 @@ while [ "$#" -ne 0 ]; do
     echo "stop: Stops the VM execution if it is running."
     echo "create: Creates a VM if there is no one created. When using this command is recommended execute the stash one before, to make sure the deletion of any previous VM configuration."
     echo "install: This command installs Virtual Box from the repo via command line. It may require sudo permission. Check option --logon-password for unattended execution."
-    echo "installVboxClient: This task will check and automatically install if something is missing.. It may require sudo permission. Check option --logon-password for unattended execution."
+    echo "installVboxClient: This task will check and automatically install if something is missing. It may require sudo permission. Check option --logon-password for unattended execution."
     echo "all: From a fresh installation state, this command executes a check, create and prepare commands in that order to make a clean VM configuration and proceed to prepare MacOS installation."
     echo ""
     echo "Available options:"
@@ -202,11 +213,7 @@ if [ -z "$tasks" ]; then
   echo "No task to execute, the script will do nothing. Please use the option --help to see usage."
   exit 1
 fi
-checkVMName(){
-  while [ -z "$VM" ]; do
-    read -p "Enter VM's name. Press Ctrl+C to stop the script: " VM
-  done
-}
+
 readonly DATE_STR="$(date +'%Y-%m-%d-%H:%M:%S')"
 readonly FILE_LOG="${MEDIA_DIR}${DATE_STR}.log"
 # Logging #####################################################################
@@ -410,6 +417,12 @@ installVBox() {
   # expectify "sudo timeshift --create --comments \'Virtual\ Box\ installed\'" #Create a restore point
 }
 
+checkVMName(){
+  while [ -z "$VM" ]; do
+    read -p "Enter VM's name. Press Ctrl+c to stop the script: " VM
+  done
+}
+
 createVM() {
   checkVMName || exit 0
   echo "Selected profile for setup: "
@@ -422,10 +435,23 @@ createVM() {
   if [ ! -e "$VM_DIR" ]; then
     mkdir -p "$VM_DIR"
   fi
-  info "Creating VM HDD '$VM_DIR/$VM.vdi' (around 5 seconds)..." 90
-  if [ ! -e "$VM_DIR/$VM.vdi" ]; then
+  local readonly VM_HARD_DRIVE_FILE="$VM_DIR/$VM.vmdk"
+  info "Creating VM HDD '$VM_HARD_DRIVE_FILE' (around 5 seconds)..." 90
+  if [ ! -e "$VM_HARD_DRIVE_FILE" ]; then
     echo "Creating disk with variant: '$VM_HDD_TYPE'"
-    vboxmanage createhd --filename "$VM_DIR/$VM.vdi" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
+    if [ ! -z "$VM_RAW_DISK" ]; then
+      echo "*** Selected Raw Hard Drive Access"
+      echo "Disk: $VM_RAW_DISK"
+      if [ ! -z "$VM_RAW_DISK_PARTITIONS" ]; then
+        echo "Partitions: $VM_RAW_DISK_PARTITIONS"
+        vboxmanage internalcommands createrawvmdk -filename "$VM_HARD_DRIVE_FILE" -rawdisk "$VM_RAW_DISK" -partitions "$VM_RAW_DISK_PARTITIONS" #-relative 
+      else
+        vboxmanage internalcommands createrawvmdk -filename "$VM_HARD_DRIVE_FILE" -rawdisk "$VM_RAW_DISK"
+      fi
+    else
+      vboxmanage createhd --filename "$VM_HARD_DRIVE_FILE" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
+    fi
+
     result "Done!"
   else
     result "already exists." 0
@@ -438,7 +464,7 @@ createVM() {
     vboxmanage setextradata "$VM" "CustomVideoMode1" "${VM_RES}x32"
     vboxmanage setextradata "$VM" VBoxInternal2/EfiGraphicsResolution "$VM_RES"
     vboxmanage storagectl "$VM" --name "SATA Controller" --add sata --controller IntelAHCI --hostiocache on
-    vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_DIR/$VM.vdi"
+    vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HARD_DRIVE_FILE"
 
     # vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium none
     # vboxmanage storageattach "MacOS-Mojave" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none
