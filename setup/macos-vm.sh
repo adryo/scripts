@@ -412,7 +412,8 @@ installVBox() {
   result "Done!"
 
   # Add user to vboxusers group
-  expectify "sudo usermod -a -G vboxusers $USER"
+  expectify "sudo usermod -aG vboxusers $USER"
+  expectify "sudo usermod -aG disk $USER"
 
   # expectify "sudo timeshift --create --comments \'Virtual\ Box\ installed\'" #Create a restore point
 }
