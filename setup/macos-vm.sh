@@ -436,29 +436,32 @@ createVM() {
   if [ ! -e "$VM_DIR" ]; then
     mkdir -p "$VM_DIR"
   fi
-  local readonly VM_HARD_DRIVE_FILE="${VM_DIR}${VM}.vmdk"
-  info "Creating VM HDD '$VM_HARD_DRIVE_FILE' (around 5 seconds)..." 90
-  if [ ! -e "$VM_HARD_DRIVE_FILE" ]; then
+  local readonly VM_HDD_FILE="${VM_DIR}${VM}.vmdk"
+  info "Creating VM HDD '$VM_HDD_FILE' (around 5 seconds)..." 90
+  if [ ! -e "$VM_HDD_FILE" ]; then
     echo "Creating disk with variant: '$VM_HDD_TYPE'"
     if [ ! -z "$VM_RAW_DISK" ]; then
       echo "*** Selected Raw Hard Drive Access"
       echo "Disk: $VM_RAW_DISK"
       if [ ! -z "$VM_RAW_DISK_PARTITIONS" ]; then
         echo "Partitions: $VM_RAW_DISK_PARTITIONS"
-        vboxmanage internalcommands createrawvmdk -filename "$VM_HARD_DRIVE_FILE" -rawdisk "$VM_RAW_DISK" -partitions "$VM_RAW_DISK_PARTITIONS" #-relative 
+        vboxmanage internalcommands createrawvmdk -filename "$VM_HDD_FILE" -rawdisk "$VM_RAW_DISK" -partitions "$VM_RAW_DISK_PARTITIONS" #-relative 
       else
-        vboxmanage internalcommands createrawvmdk -filename "$VM_HARD_DRIVE_FILE" -rawdisk "$VM_RAW_DISK"
+        vboxmanage internalcommands createrawvmdk -filename "$VM_HDD_FILE" -rawdisk "$VM_RAW_DISK"
       fi
+
+      #echo "Giving permissions to '$VM_HDD_FILE'"
+      #sudo chmod 777 "$VM_HDD_FILE"
     else
-      vboxmanage createhd --filename "$VM_HARD_DRIVE_FILE" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
+      vboxmanage createhd --filename "$VM_HDD_FILE" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
     fi
 
-    if [ ! -z "$?" ]; then
-      echo "Cannot create the VM. Exitting..."
+    if [ $? -ne 0 ]; then
+      result "Cannot create the VM. Exitting..." 0
       exit 1
     fi
-    
-    result "Done!"
+
+    result "Done!" 0
   else
     result "already exists." 0
   fi
@@ -471,11 +474,12 @@ createVM() {
     vboxmanage setextradata "$VM" "CustomVideoMode1" "${VM_RES}x32"
     vboxmanage setextradata "$VM" VBoxInternal2/EfiGraphicsResolution "$VM_RES"
     vboxmanage storagectl "$VM" --name "SATA Controller" --add sata --controller IntelAHCI --hostiocache on
-    vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HARD_DRIVE_FILE"
 
-    # vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium none
-    # vboxmanage storageattach "MacOS-Mojave" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none
-
+    echo "Attaching '$VM_HDD_FILE'"
+    vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HDD_FILE"
+    if [ $? -eq 0 ]; then
+      echo "Done!"
+    fi
     # Add codecs
     vboxmanage modifyvm "$VM" --cpuidset 00000001 000106e5 00100800 0098e3fd bfebfbff
     vboxmanage setextradata "$VM" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "iMac11,3"
