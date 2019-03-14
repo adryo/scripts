@@ -435,7 +435,7 @@ createVM() {
   if [ ! -e "$VM_DIR" ]; then
     mkdir -p "$VM_DIR"
   fi
-  local readonly VM_HARD_DRIVE_FILE="$VM_DIR/$VM.vmdk"
+  local readonly VM_HARD_DRIVE_FILE="${VM_DIR}${VM}.vmdk"
   info "Creating VM HDD '$VM_HARD_DRIVE_FILE' (around 5 seconds)..." 90
   if [ ! -e "$VM_HARD_DRIVE_FILE" ]; then
     echo "Creating disk with variant: '$VM_HDD_TYPE'"
