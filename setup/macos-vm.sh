@@ -12,7 +12,7 @@ source /dev/stdin <<<"$(curl --insecure -sS https://raw.githubusercontent.com/ad
 
 # Global Variables
 VM=""                # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
-VM_HDD_TYPE="Fixed"
+VM_HDD_TYPE="Standard"
 VM_HDD_SIZE="102400" # 100 Gb Can be changed using option --vm-hdd-size in Gb, ex. (integer) 100, 120, 80.
 VM_RES="1366x768"
 VM_RAM="4096" # 4Gb  Can be changed using option --vm-ram-size in Gb, ex. (integer) 6, 8, 4.
@@ -20,10 +20,11 @@ VM_CPU="2"    # Can be changed using option --vm-cpu
 VM_SNAPSHOT_TAG=""
 VM_RAW_DISK=""
 VM_RAW_DISK_PARTITIONS=""
+VM_DEFAULT_STORAGE_CTL="SATA"
 
 readonly VM_VRAM="128"
 readonly VBOX_VERSION="6.0"
-readonly VM_DIR="$HOME/VirtualBox VMs/$VM"
+VM_DIR="$HOME/VirtualBox VMs/$VM"
 
 RDP_PORT="3389" # Can be changed using option --vm-rdp-port
 SSH_PORT="2222" # Can be changed using option --vm-ssh-port
@@ -199,7 +200,7 @@ while [ "$#" -ne 0 ]; do
     echo "--vm-snapshot-tag: Sets a custom tag identifier for the snapshot. Only usable when executing snapshot task."
     exit 0
     ;;
-  all | check | info | run | stop | stash | snapshot | attach | detach | install | installVBoxClient | create | prepare)
+  all | deploy | check | info | run | stop | stash | snapshot | attach | detach | install | installVBoxClient | create | prepare)
     tasks+=($ARG)
     ;;
   *)
@@ -249,6 +250,12 @@ log() {
 }
 
 downloadMedias() {
+  _pattern="Mac*.iso*"
+
+  if [ -z "$1" ]; then
+    read -p "File or pattern ex. [MacOS-Mojave.iso | Mac*.vmdk*] (Press ENTER to Mac*.iso*): " _pattern
+  fi
+  local readonly PATTERN=${1:-$_pattern}
   if [ -z "$FTP_HOST" ]; then
     local mode=""
     read -p "Download mode [ftp/scp] (Press ENTER to ftp): " mode
@@ -274,11 +281,11 @@ downloadMedias() {
   echo "Download mode is set to: '$DOWNLOAD_MODE'"
   echo "Connecting to ${FTP_HOST}${FTP_DIR}, with credentials: $FTP_USER"
   if [ -z "$DOWNLOAD_MODE" ] || [ "ftp" == "$DOWNLOAD_MODE" ]; then
-    wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}*" --directory-prefix=$MEDIA_DIR
+    wget --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD "${FTP_HOST}${FTP_DIR}$PATTERN" --directory-prefix=$MEDIA_DIR
     downloaded=1
   else
     if [ "scp" == "$DOWNLOAD_MODE" ]; then
-      run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}MacOS-*.iso* $MEDIA_DIR;" "$FTP_PASSWORD"
+      run_expect "scp -r $FTP_USER@$FTP_HOST:${FTP_DIR}$PATTERN $MEDIA_DIR;" "$FTP_PASSWORD"
       downloaded=1
     fi
   fi
@@ -296,16 +303,17 @@ DST_ISO=""
 ###############################################################################
 
 checkInstallationMedia() {
-  echo "Looking for installation media (ISO files)..."
+  local readonly media_pattern=${1:-"*.iso.cdr"}
+  echo "Looking for installation media ($media_pattern files)..."
   # Extract ISO name
-  if [ ! -d "$MEDIA_DIR" ] && mkdir -p "$MEDIA_DIR" || [ -z "$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)" ]; then
+  if [ ! -d "$MEDIA_DIR" ] && mkdir -p "$MEDIA_DIR" || [ -z "$(find $MEDIA_DIR -maxdepth 1 -type f -name $media_pattern -print -quit)" ]; then
     echo "ISO files not found, attempting to download them..."
 
     # Request to download the ISO files.
-    downloadMedias
+    downloadMedias $2
   fi
 
-  local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name '*.iso.cdr' -print -quit)"
+  local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name $media_pattern -print -quit)"
   name=${name##*/}
   name=${name%.*.*}
 
@@ -313,12 +321,10 @@ checkInstallationMedia() {
     echo "No installation media found. Unable to install, stopping script..."
     return 1
   else
-    echo "Found!"
+    echo "Found media: $name!"
     DST_CLOVER="${MEDIA_DIR}${name}-Clover"
     DST_ISO="${MEDIA_DIR}${name}.iso.cdr"
   fi
-
-  return 0
 }
 
 runChecks() {
@@ -347,8 +353,6 @@ runChecks() {
       exit 1
     fi
   fi
-
-  checkInstallationMedia
 
   if ! type vboxmanage >/dev/null 2>&1; then
     result "'VBoxManage' not installed. Trying to install automatically..." 0
@@ -422,24 +426,23 @@ checkVMName(){
   while [ -z "$VM" ]; do
     read -p "Enter VM's name. Press Ctrl+c to stop the script: " VM
   done
+
+  VM_DIR="$HOME/VirtualBox VMs/$VM"
 }
 
-createVM() {
+VM_HDD_FILE=""
+
+createHDD(){
   checkVMName || exit 0
-  echo "Selected profile for setup: "
-  echo "* VM's name: $VM"
-  echo "* HDD Size: $((VM_HDD_SIZE / 1024)) Gb"
-  echo "* VM RAM: $((VM_RAM / 1024)) Gb"
-  echo "* VM CPU: $VM_CPU"
-  echo "* RDP port: $RDP_PORT"
-  echo "* SSH port: $SSH_PORT"
+
   if [ ! -e "$VM_DIR" ]; then
     mkdir -p "$VM_DIR"
   fi
-  local readonly VM_HDD_FILE="${VM_DIR}${VM}.vmdk"
-  info "Creating VM HDD '$VM_HDD_FILE' (around 5 seconds)..." 90
+
+  VM_HDD_FILE="${VM_DIR}${VM}.vmdk"
+
+  info "Searchig for VM HDD '$VM_HDD_FILE' ..." 90
   if [ ! -e "$VM_HDD_FILE" ]; then
-    echo "Creating disk with variant: '$VM_HDD_TYPE'"
     if [ ! -z "$VM_RAW_DISK" ]; then
       echo "*** Selected Raw Hard Drive Access"
       echo "Disk: $VM_RAW_DISK"
@@ -453,36 +456,40 @@ createVM() {
       #echo "Giving permissions to '$VM_HDD_FILE'"
       #sudo chmod 777 "$VM_HDD_FILE"
     else
+      echo "Creating disk with variant: '$VM_HDD_TYPE' (around 5 seconds) ..."
+      echo "* HDD Size: $((VM_HDD_SIZE / 1024)) Gb"
       vboxmanage createhd --filename "$VM_HDD_FILE" --variant "$VM_HDD_TYPE" --size "$VM_HDD_SIZE"
     fi
 
     if [ $? -ne 0 ]; then
-      result "Cannot create the VM. Exitting..." 0
-      exit 1
+      return 1
     fi
 
     result "Done!" 0
   else
-    result "already exists." 0
+    result "Already exists." 0
   fi
+}
 
-  info "Creating VM '$VM' (around 2 seconds)..." 99
-  if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
-    result "Done!"
-    vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
+configureVM(){
+  checkVMName || exit 0
+  echo "Selected profile for setup: "
+  echo "* VM's name: $VM"
+  echo "* VM RAM: $((VM_RAM / 1024)) Gb"
+  echo "* VM CPU: $VM_CPU"
+  echo "* RDP port: $RDP_PORT"
+  echo "* SSH port: $SSH_PORT"
+
+  info "Configuring VM '$VM' (around 2 seconds)..." 99
+  if vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
     vboxmanage modifyvm "$VM" --usbxhci on --memory "$VM_RAM" --vram "$VM_VRAM" --cpus "$VM_CPU" --firmware efi --chipset ich9 --mouse usbtablet --keyboard usb
     vboxmanage setextradata "$VM" "CustomVideoMode1" "${VM_RES}x32"
     vboxmanage setextradata "$VM" VBoxInternal2/EfiGraphicsResolution "$VM_RES"
-    vboxmanage storagectl "$VM" --name "SATA Controller" --add sata --controller IntelAHCI --hostiocache on
+    vboxmanage storagectl "$VM" --name $VM_DEFAULT_STORAGE_CTL --add sata --controller IntelAHCI --hostiocache on
 
-    echo "Attaching '$VM_HDD_FILE'"
-    vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HDD_FILE"
-    if [ $? -eq 0 ]; then
-      echo "Done!"
-    fi
     # Add codecs
     vboxmanage modifyvm "$VM" --cpuidset 00000001 000106e5 00100800 0098e3fd bfebfbff
-    vboxmanage setextradata "$VM" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "iMac11,3"
+    vboxmanage setextradata "$VM" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "MacBookPro15,6"
     vboxmanage setextradata "$VM" "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
     vboxmanage setextradata "$VM" "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "Iloveapple"
     vboxmanage setextradata "$VM" "VBoxInternal/Devices/smc/0/Config/DeviceKey" "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
@@ -494,8 +501,65 @@ createVM() {
     # Enable Virtual Machine SSH door
     vboxmanage modifyvm "$VM" --nic1 NAT
     vboxmanage modifyvm "$VM" --natpf1 "guestssh,tcp,,$SSH_PORT,,22"
+    echo "Done!"
+  fi
+}
+
+createVM() {
+  checkVMName || exit 0
+  
+  if ! createHDD; then
+    result "Cannot create the VM. Exitting..." 0
+    exit 1
+  fi
+
+  info "Creating VM '$VM' (around 2 seconds)..." 99
+  if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
+    vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
+    
+    configureVM
+
+    echo "Attaching HDD '$VM_HDD_FILE'"
+    vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HDD_FILE"
+    if [ $? -eq 0 ]; then
+      result "Done!"
+    fi
   else
     result "already exists."
+  fi
+}
+
+deployVM(){
+  checkVMName || exit 0
+  local readonly media_pattern="*.vmdk"
+  
+  checkInstallationMedia $media_pattern $media_pattern
+  if [ $? -eq 0 ]; then
+    #if ! createHDD; then
+    #  result "Cannot create the VM. Exitting..." 0
+    #  exit 1
+    #fi
+
+    info "Creating VM '$VM' (around 2 seconds)..." 99
+    if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
+      vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
+    else
+      result "already exists."
+    fi
+
+    configureVM
+
+    local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name $media_pattern -print -quit)"
+    name=${name##*/}
+    echo "Instalation media: '$name'"
+    VM_HDD_FILE="$VM_DIR/$VM.vmdk"
+    vboxmanage clonehd "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VMDK
+    echo "Attaching '$VM_HDD_FILE'"
+    vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HDD_FILE"
+    if [ $? -eq 0 ]; then
+      echo "Attached HDD!"
+    fi
+    result "Virtual Machine ready!"
   fi
 }
 
@@ -521,16 +585,15 @@ runVM() {
 stopVM() {
   checkVMName || exit 0
   info "Requested to stop '$VM', proceding..."
-  vboxmanage controlvm "$VM" poweroff soft || true
+  vboxmanage controlvm "$VM" poweroff soft
   if [ "$?" == "0" ]; then
     result "Done!"
   fi
-  result ""
 }
 
 attach() {
   checkVMName || exit 0
-  checkInstallationMedia
+  checkInstallationMedia "" "Mac*.iso*"
   if [ "$?" != "0" ]; then
     echo "No ISOs to attach. Stopping script..."
     exit 1
@@ -543,8 +606,8 @@ attach() {
     info "Stopping VM before attach the media..." 0
   fi
 
-  vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium "$DST_CLOVER.iso"
-  vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium "$DST_ISO"
+  vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 1 --device 0 --type dvddrive --medium "$DST_CLOVER.iso"
+  vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 2 --device 0 --type dvddrive --medium "$DST_ISO"
   result "Done!"
 }
 
@@ -557,8 +620,8 @@ detach() {
     info "Stopping VM before detach the medias..." 0
   fi
 
-  vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium none
-  vboxmanage storageattach "$VM" --storagectl "SATA Controller" --port 2 --device 0 --type dvddrive --medium none
+  vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 1 --device 0 --type dvddrive --medium none
+  vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 2 --device 0 --type dvddrive --medium none
   result "Done!"
 }
 
@@ -670,6 +733,7 @@ main() {
       rm ubuntu-phpvbox-client.sh
     ;;
     all) runChecks && createVM && prepareOS ;;
+    deploy) runChecks && deployVM;;
     esac
   done
 }
