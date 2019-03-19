@@ -21,6 +21,7 @@ VM_SNAPSHOT_TAG=""
 VM_RAW_DISK=""
 VM_RAW_DISK_PARTITIONS=""
 VM_DEFAULT_STORAGE_CTL="SATA"
+VMDK_FILE="*.vmdk"
 
 readonly VM_VRAM="128"
 readonly VBOX_VERSION="6.0"
@@ -106,6 +107,10 @@ while [ "$#" -ne 0 ]; do
     ;;
   --scp-dir)
     FTP_DIR=$1
+    shift
+    ;;
+  --vmdk-file)
+    VMDK_FILE=$1
     shift
     ;;
   --vm-name)
@@ -250,7 +255,7 @@ log() {
 }
 
 downloadMedias() {
-  _pattern="Mac*.iso*"
+  local _pattern="Mac*.iso*"
 
   if [ -z "$1" ]; then
     read -p "File or pattern ex. [MacOS-Mojave.iso | Mac*.vmdk*] (Press ENTER to Mac*.iso*): " _pattern
@@ -531,7 +536,7 @@ createVM() {
 
 deployVM(){
   checkVMName || exit 0
-  local readonly media_pattern="*.vmdk"
+  local readonly media_pattern=${VMDK_FILE:-"*.vmdk"}
   
   checkInstallationMedia $media_pattern $media_pattern
   if [ $? -eq 0 ]; then
@@ -539,7 +544,7 @@ deployVM(){
     #  result "Cannot create the VM. Exitting..." 0
     #  exit 1
     #fi
-
+    exit
     info "Creating VM '$VM' (around 2 seconds)..." 99
     if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
       vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
