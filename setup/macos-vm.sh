@@ -544,7 +544,6 @@ deployVM(){
     #  result "Cannot create the VM. Exitting..." 0
     #  exit 1
     #fi
-    exit
     info "Creating VM '$VM' (around 2 seconds)..." 99
     if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
       vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
