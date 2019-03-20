@@ -544,6 +544,13 @@ deployVM(){
     #  result "Cannot create the VM. Exitting..." 0
     #  exit 1
     #fi
+    
+    local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name $media_pattern -print -quit)"
+    name=${name##*/}
+    echo "Instalation media: '$name'"
+    VM_HDD_FILE="$VM_DIR/$VM.vmdk"
+    vboxmanage clonehd "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VMDK
+
     info "Creating VM '$VM' (around 2 seconds)..." 99
     if ! vboxmanage showvminfo "$VM" >/dev/null 2>&1; then
       vboxmanage createvm --register --name "$VM" --ostype MacOS1013_64
@@ -553,11 +560,6 @@ deployVM(){
 
     configureVM
 
-    local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name $media_pattern -print -quit)"
-    name=${name##*/}
-    echo "Instalation media: '$name'"
-    VM_HDD_FILE="$VM_DIR/$VM.vmdk"
-    vboxmanage clonehd "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VMDK
     echo "Attaching '$VM_HDD_FILE'"
     vboxmanage storageattach "$VM" --storagectl $VM_DEFAULT_STORAGE_CTL --port 0 --device 0 --type hdd --nonrotational on --medium "$VM_HDD_FILE"
     if [ $? -eq 0 ]; then
@@ -742,7 +744,6 @@ main() {
   done
 }
 ###############################################################################
-
 # Run script ##################################################################
 [[ ${BASH_SOURCE[0]} == "${0}" ]] && trap 'cleanup "${?}" "${LINENO}" "${BASH_LINENO}" "${BASH_COMMAND}" $(printf "::%s" ${FUNCNAME[@]:-})' EXIT && main "${tasks[@]}"
 ###############################################################################
