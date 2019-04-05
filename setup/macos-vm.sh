@@ -205,7 +205,7 @@ while [ "$#" -ne 0 ]; do
     echo "--vm-snapshot-tag: Sets a custom tag identifier for the snapshot. Only usable when executing snapshot task."
     exit 0
     ;;
-  all | deploy | check | info | run | stop | stash | snapshot | attach | detach | install | installVBoxClient | create | prepare)
+  all | deploy | deployAgent | check | info | run | stop | stash | snapshot | attach | detach | install | installVBoxClient | create | prepare)
     tasks+=($ARG)
     ;;
   *)
@@ -549,6 +549,7 @@ deployVM(){
     name=${name##*/}
     echo "Instalation media: '$name'"
     VM_HDD_FILE="$VM_DIR/$VM.vmdk"
+    echo "Start to clonning media $name"
     vboxmanage clonehd "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VMDK
 
     info "Creating VM '$VM' (around 2 seconds)..." 99
@@ -565,6 +566,12 @@ deployVM(){
     if [ $? -eq 0 ]; then
       echo "Attached HDD!"
     fi
+
+    temp=$VM_SNAPSHOT_TAG
+    VM_SNAPSHOT_TAG="VM-Deployed"
+    runSnapshot
+    VM_SNAPSHOT_TAG=$temp
+    
     result "Virtual Machine ready!"
   fi
 }
@@ -739,11 +746,13 @@ main() {
       rm ubuntu-phpvbox-client.sh
     ;;
     all) runChecks && createVM && prepareOS ;;
-    deploy) runChecks && deployVM;;
+    deploy) runChecks && deployVM && runVM ;;
+    deployAgent) deployAgent ;;
     esac
   done
 }
 ###############################################################################
+
 # Run script ##################################################################
 [[ ${BASH_SOURCE[0]} == "${0}" ]] && trap 'cleanup "${?}" "${LINENO}" "${BASH_LINENO}" "${BASH_COMMAND}" $(printf "::%s" ${FUNCNAME[@]:-})' EXIT && main "${tasks[@]}"
 ###############################################################################
