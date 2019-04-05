@@ -420,6 +420,8 @@ installVBox() {
   expectify "sudo apt install virtualbox-${VBOX_VERSION} -y"
   result "Done!"
 
+  expectify "sudo /sbin/vboxconfig"
+
   # Add user to vboxusers group
   expectify "sudo usermod -aG vboxusers $USER"
   expectify "sudo usermod -aG disk $USER"
