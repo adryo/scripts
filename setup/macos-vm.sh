@@ -549,7 +549,7 @@ deployVM(){
     name=${name##*/}
     echo "Instalation media: '$name'"
     VM_HDD_FILE="$VM_DIR/$VM.vmdk"
-    echo "Start to clonning media $name"
+    echo "Started to clone media $name"
     vboxmanage clonemedium disk "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VMDK
 
     # Unregistry the DISK
