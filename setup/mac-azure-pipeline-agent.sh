@@ -195,7 +195,7 @@ installAzureAgent(){
     ./svc.sh start
 
     echo "Installing Launch daemon"
-    expectify "sudo cp ~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+    expectify "sudo cp ~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/"
     echo "Done!"
   else
     echo "Unable to configure the service. Check logs for more info."
