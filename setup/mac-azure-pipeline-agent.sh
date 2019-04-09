@@ -322,7 +322,7 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
 
   sdkmanager --update
 
-  expectify "yes | sudo sdkmanager --licenses"
+  #expectify "yes | sudo sdkmanager --licenses"
 
   #Step 3: Configure env
   echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
