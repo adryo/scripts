@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
 # Global Variables
 APPLE_USER=""
@@ -36,7 +36,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
