@@ -17,7 +17,7 @@ TOKEN=""
 POOL=""
 TIMEZONE=""
 INSTALL_XCODE=1
-XCODE_VERSIONS=(10.1)
+XCODE_VERSIONS=(10.2)
 INSTALL_ANDROID=1
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
