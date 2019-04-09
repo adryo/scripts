@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/globals.sh)" || exit 1
 
 # Global Variables
 APPLE_USER=""
@@ -9,7 +9,7 @@ APPLE_PASSWORD=""
 
 # TFS Variables
 # VSTS Agent Variables
-readonly AZURE_AGENT_VERSION="2.147.1"
+readonly AZURE_AGENT_VERSION="2.150.0"
 AGENT_NAME="VM-$GLOBAL_PLATFORM_OS-Mojave01"
 CONFIGURE_AZURE_PIPELINE_AGENT=1
 SERVER_URL=""
@@ -17,7 +17,7 @@ TOKEN=""
 POOL=""
 TIMEZONE=""
 INSTALL_XCODE=1
-XCODE_VERSIONS=(10.1)
+XCODE_VERSIONS=(10.2)
 INSTALL_ANDROID=1
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
@@ -36,7 +36,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
@@ -143,7 +143,7 @@ installAzureAgent(){
       echo "Found service file. Trying to uninstall.."
       ~/$AGENT_INSTANCE/svc.sh uninstall
       if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist"; then
-        exectify "sudo rm /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+        expectify "sudo rm /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
         echo "Uninstalled!"
       fi
     fi
@@ -160,13 +160,13 @@ installAzureAgent(){
     curl -Lk https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE -o ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
     echo "Installing the agent..."  
-    cd ~/$AGENT_INSTANCE
+    cd ~/$AGENT_INSTANCE/
     tar xzf ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
     sleep 1
   done
   
-  echo "Configuring the agent to be used..."
+  echo "Configuring the agent instance..."
   #Step 4: Configuring this agent at TFS server
   # Set the timezone before configure
   expectify "sudo systemsetup -settimezone $TIMEZONE"
@@ -176,10 +176,12 @@ installAzureAgent(){
   #The Agent Name must follow this format: CopSonic[Windows/Ubuntu/Mac][0..9]+
   ~/$AGENT_INSTANCE/config.sh --unattended --replace --url $SERVER_URL --auth PAT --token $TOKEN --pool $POOL --agent $AGENT_NAME --work _work
 
+  echo "Done!"
+
   if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
-    ~/$AGENT_INSTANCE/svc.sh install
-    echo "Installing Launch daemon"
-    exectify "sudo cp ~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+    cd ~/$AGENT_INSTANCE/
+    echo "Installing agent service..."
+    ./svc.sh install
     echo "Done!"
     # Link the .bash_profile file to load all ENV and configurations
     printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AGENT_INSTANCE/runsvc.sh
@@ -190,7 +192,11 @@ installAzureAgent(){
       echo "Automatic mantainance routine installed!"
     fi
     # Start the service
-    ~/$AGENT_INSTANCE/svc.sh start
+    ./svc.sh start
+
+    echo "Installing Launch daemon"
+    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/"
+    echo "Done!"
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
@@ -307,6 +313,9 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
   expectify "brew cask install android-sdk"
   expectify "brew cask install android-ndk"
 
+  mkdir -p ~/.android/
+  touch ~/.android/repositories.cfg
+
   #Installing all build-tools and platforms
   sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >>out.txt
   isAvailable=false
@@ -321,8 +330,6 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
   done <"out.txt"
 
   sdkmanager --update
-
-  expectify "yes | sudo sdkmanager --licenses"
 
   #Step 3: Configure env
   echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
@@ -396,4 +403,4 @@ if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
 fi
 
 # Heading to home dir
-cd ~
+cd ~/
