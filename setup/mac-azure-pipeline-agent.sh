@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/globals.sh)" || exit 1
 
 # Global Variables
 APPLE_USER=""
@@ -36,7 +36,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup-mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
@@ -143,7 +143,7 @@ installAzureAgent(){
       echo "Found service file. Trying to uninstall.."
       ~/$AGENT_INSTANCE/svc.sh uninstall
       if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist"; then
-        exectify "sudo rm /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+        expectify "sudo rm /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
         echo "Uninstalled!"
       fi
     fi
@@ -160,7 +160,7 @@ installAzureAgent(){
     curl -Lk https://vstsagentpackage.azureedge.net/agent/$AZURE_AGENT_VERSION/$AZURE_AGENT_TARGZ_FILE -o ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
     echo "Installing the agent..."  
-    cd ~/$AGENT_INSTANCE
+    cd ~/$AGENT_INSTANCE/
     tar xzf ~/$AZURE_AGENT_HOME/$AZURE_AGENT_TARGZ_FILE
     echo "Done!"
     sleep 1
@@ -179,8 +179,9 @@ installAzureAgent(){
   echo "Done!"
 
   if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
+    cd ~/$AGENT_INSTANCE/
     echo "Installing agent service..."
-    ~/$AGENT_INSTANCE/svc.sh install
+    ./svc.sh install
     echo "Done!"
     # Link the .bash_profile file to load all ENV and configurations
     printf '1a\nsource ~/.bash_profile\n.\nw\n' | ed ~/$AGENT_INSTANCE/runsvc.sh
@@ -191,10 +192,10 @@ installAzureAgent(){
       echo "Automatic mantainance routine installed!"
     fi
     # Start the service
-    ~/$AGENT_INSTANCE/svc.sh start
+    ./svc.sh start
 
     echo "Installing Launch daemon"
-    exectify "sudo cp ~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+    expectify "sudo cp ~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
     echo "Done!"
   else
     echo "Unable to configure the service. Check logs for more info."
@@ -402,4 +403,4 @@ if [ "$CONFIGURE_AZURE_PIPELINE_AGENT" == "1" ]; then
 fi
 
 # Heading to home dir
-cd ~
+cd ~/
