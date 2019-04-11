@@ -83,7 +83,7 @@ while [ "$#" -ne 0 ]; do
     IFS=',' read -ra VERS <<<"$IN"
     for v in "${VERS[@]}"; do
       # process "$v"
-      XCODE_VERSIONS=("$v" "${XCODE_VERSIONS[@]}")
+      XCODE_VERSIONS=("${XCODE_VERSIONS[@]}" "$v")
     done
     shift
     ;;
@@ -348,6 +348,10 @@ else
   echo "Skipping android installation..."
 fi
 
+# Install C++ build tools
+expectify "brew install cmake"
+
+expectify "brew install ninja"
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
