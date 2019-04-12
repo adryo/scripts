@@ -63,7 +63,7 @@ while [ "$#" -ne 0 ]; do
   case "$ARG" in
   --install-script)
     echo "Requested to install local script..."
-    readonly scriptFile="$HOME/macos-vm.sh"
+    readonly scriptFile="$HOME/macos-vm-proxy.sh"
     if [ -f "$scriptFile" ]; then
       rm "$scriptFile"
     fi
