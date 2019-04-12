@@ -17,7 +17,7 @@ found_logon_password=0
 for arg do
   shift
   if [ "$found_logon_password" == "1" ]; then
-    CURRENT_LOGON_PASSWORD="$arg"
+    CURRENT_LOGON_PASSWORD=$arg
     found_logon_password=0
     continue
   fi
