@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
 
 # Global Variables
 APPLE_USER=""
@@ -36,7 +36,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
@@ -83,7 +83,7 @@ while [ "$#" -ne 0 ]; do
     IFS=',' read -ra VERS <<<"$IN"
     for v in "${VERS[@]}"; do
       # process "$v"
-      XCODE_VERSIONS=("$v" "${XCODE_VERSIONS[@]}")
+      XCODE_VERSIONS=("${XCODE_VERSIONS[@]}" "$v")
     done
     shift
     ;;
@@ -348,6 +348,10 @@ else
   echo "Skipping android installation..."
 fi
 
+# Install C++ build tools
+expectify "brew install cmake"
+
+expectify "brew install ninja"
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
