@@ -18,7 +18,6 @@ POOL=""
 TIMEZONE=""
 INSTALL_XCODE=1
 XCODE_VERSIONS=(10.2)
-INSTALL_ANDROID=1
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
 while [ "$#" -ne 0 ]; do
@@ -51,9 +50,6 @@ while [ "$#" -ne 0 ]; do
     ;;
   --skip-agent-config)
     CONFIGURE_AZURE_PIPELINE_AGENT=0
-    ;;
-  --skip-android)
-    INSTALL_ANDROID=0
     ;;
   --agent-name)
     AGENT_NAME=$1
@@ -194,6 +190,7 @@ installAzureAgent(){
     # Start the service
     ./svc.sh start
 
+    sleep 10
     echo "Installing Launch daemon"
     expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/"
     echo "Done!"
@@ -306,48 +303,6 @@ expectify "brew cask install java8"
 #Step 2: Add JAVA_HOME into env
 echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
 
-if [ "$INSTALL_ANDROID" == "1" ]; then
-  ##Android SDK##
-  #Step 1: Install SDK
-  brew tap homebrew/cask
-  expectify "brew cask install android-sdk"
-  expectify "brew cask install android-ndk"
-
-  mkdir -p ~/.android/
-  touch ~/.android/repositories.cfg
-
-  #Installing all build-tools and platforms
-  sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >>out.txt
-  isAvailable=false
-  while IFS='' read -r line || [[ -n "$line" ]]; do
-    if [[ ($line == *"Available"*) || ("$isAvailable" == true) ]]; then
-      isAvailable=true
-      if [[ ($line == *"build-tools;"*) || ($line == *"platforms;"*) ]]; then
-        yes | sdkmanager ""$line""
-      fi
-    fi
-
-  done <"out.txt"
-
-  sdkmanager --update
-
-  #Step 3: Configure env
-  echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
-  echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
-  echo 'export ANDROID_HOME="$ANDROID_SDK_ROOT"' >>~/.bash_profile
-  echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools"' >>~/.bash_profile
-
-  # SymLink sdk for Android
-  mkdir -p ~/Library/Android
-  ln -s /usr/local/share/android-sdk ~/Library/Android
-  mv ~/Library/Android/android-sdk ~/Library/Android/sdk
-
-  ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
-  mv ~/Library/Android/sdk/android-ndk ~/Library/Android/sdk/ndk-bundle
-else
-  echo "Skipping android installation..."
-fi
-
 # Install C++ build tools
 expectify "brew install cmake"
 
@@ -355,13 +310,6 @@ expectify "brew install ninja"
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
-
-echo 'export PATH="/usr/local/opt/icu4c/bin:$PATH"' >>~/.bash_profile
-echo 'export PATH="/usr/local/opt/icu4c/sbin:$PATH"' >>~/.bash_profile
-
-#For compilers to find icu4c you may need to set:
-echo 'export LDFLAGS="-L/usr/local/opt/icu4c/lib"' >>~/.bash_profile
-echo 'export CPPFLAGS="-I/usr/local/opt/icu4c/include"' >>~/.bash_profile
 
 # Alternatively using Fastlane
 expectify "sudo gem install fastlane"
@@ -389,9 +337,6 @@ expectify "sudo gem install cocoapods"
 
 #Step 1: Install the prerequisites
 expectify "brew install openssl"
-echo 'export LDFLAGS="-L/usr/local/opt/openssl/lib"' >>~/.bash_profile
-echo 'export CPPFLAGS="-I/usr/local/opt/openssl/include"' >>~/.bash_profile
-echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >>~/.bash_profile
 # Ensure folder exists on machine
 mkdir -p /usr/local/lib/
 ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/
