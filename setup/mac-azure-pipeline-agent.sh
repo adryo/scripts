@@ -18,6 +18,7 @@ POOL=""
 TIMEZONE=""
 INSTALL_XCODE=1
 XCODE_VERSIONS=(10.2)
+INSTALL_ANDROID=0
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
 while [ "$#" -ne 0 ]; do
@@ -50,6 +51,9 @@ while [ "$#" -ne 0 ]; do
     ;;
   --skip-agent-config)
     CONFIGURE_AZURE_PIPELINE_AGENT=0
+    ;;
+  --install-android)
+    INSTALL_ANDROID=1
     ;;
   --agent-name)
     AGENT_NAME=$1
@@ -100,7 +104,7 @@ while [ "$#" -ne 0 ]; do
     echo "--token: A valid PAT to use during agent configuration."
     echo "--pool-name: The pool where this agent will belong. Default is 'default'."
     echo "--timezone: The timezone to configure the agent with. Default is 'Europe/Paris'."
-    echo "--skip-android: Avoids the android sdk, ndk, tools installation and configuration."
+    echo "--install-android: If specified, installs the android sdk, ndk, tools and configures the env to use them."
     echo "--skip-xcode-install: Avoids the xcode installation."
     echo "--install-xcode: By default this script will install always Xcode 10.1, but other versions can be set to be automatically installed too. Set the version number separated by comma, ex: '--install-xcode 9.4,10.0'."
     exit 0
@@ -112,6 +116,9 @@ while [ "$#" -ne 0 ]; do
   esac
 done
 
+##VSTS Agent##
+#https://github.com/Microsoft/azure-pipelines-agent/blob/master/README.md
+#https://github.com/Microsoft/azure-pipelines-agent/blob/master/docs/start/envosx.md
 installAzureAgent(){
   if [ -z "$SERVER_URL" ]; then
     read -p "TFS server's url: " SERVER_URL
@@ -190,7 +197,6 @@ installAzureAgent(){
     # Start the service
     ./svc.sh start
 
-    sleep 10
     echo "Installing Launch daemon"
     expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/"
     echo "Done!"
@@ -297,11 +303,40 @@ fi
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
 #The easiest way to install Oracle Java JDK 8 on Mac is via a pkg manager
-brew tap caskroom/versions
-expectify "brew cask install java8"
+#brew tap caskroom/versions
+brew tap AdoptOpenJDK/openjdk
+#expectify "brew cask install java8"
+expectify "brew cask install adoptopenjdk8"
 
 #Step 2: Add JAVA_HOME into env
 echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
+
+if [ "$INSTALL_ANDROID" == "1" ]; then
+  ##Android SDK##
+  #Step 1: Install SDK
+  brew tap homebrew/cask
+  expectify "brew cask install android-sdk"
+  expectify "brew cask install android-ndk"
+
+  mkdir -p ~/.android/
+  touch ~/.android/repositories.cfg
+  
+  #Step 3: Configure env
+  echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
+  echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
+  echo 'export ANDROID_HOME="$ANDROID_SDK_ROOT"' >>~/.bash_profile
+  echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools"' >>~/.bash_profile
+
+  # SymLink sdk for Android
+  mkdir -p ~/Library/Android
+  ln -s /usr/local/share/android-sdk ~/Library/Android
+  mv ~/Library/Android/android-sdk ~/Library/Android/sdk
+
+  ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
+  mv ~/Library/Android/sdk/android-ndk ~/Library/Android/sdk/ndk-bundle
+else
+  echo "Skipping android installation..."
+fi
 
 # Install C++ build tools
 expectify "brew install cmake"
@@ -310,6 +345,13 @@ expectify "brew install ninja"
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
+
+echo 'export PATH="/usr/local/opt/icu4c/bin:$PATH"' >>~/.bash_profile
+echo 'export PATH="/usr/local/opt/icu4c/sbin:$PATH"' >>~/.bash_profile
+
+#For compilers to find icu4c you may need to set:
+echo 'export LDFLAGS="-L/usr/local/opt/icu4c/lib"' >>~/.bash_profile
+echo 'export CPPFLAGS="-I/usr/local/opt/icu4c/include"' >>~/.bash_profile
 
 # Alternatively using Fastlane
 expectify "sudo gem install fastlane"
@@ -331,12 +373,9 @@ expectify "sudo gem install xcodeproj"
 # Install cocoapods
 expectify "sudo gem install cocoapods"
 
-##VSTS Agent##
-#https://github.com/Microsoft/azure-pipelines-agent/blob/master/README.md
-#https://github.com/Microsoft/azure-pipelines-agent/blob/master/docs/start/envosx.md
-
 #Step 1: Install the prerequisites
 expectify "brew install openssl"
+
 # Ensure folder exists on machine
 mkdir -p /usr/local/lib/
 ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/
