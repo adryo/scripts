@@ -302,6 +302,7 @@ if ! type brew >/dev/null 2>&1; then
 fi
 
 ##XAMARIN##
+expectify "brew cask install xamarin-ios"
 expectify "brew cask install visual-studio"
 expectify "brew install nuget"
 
