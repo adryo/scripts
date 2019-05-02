@@ -204,10 +204,11 @@ installAzureAgent(){
 
     sleep 10
     echo "Installing Launch daemon"
-    expectify "sudo cp $HOME/Library/LaunchAgents/vsts* /Library/LaunchDaemons/"
-    echo "Done!"
-    
-    expectify "sudo reboot"
+    expectify_digit "sudo cp $HOME/Library/LaunchAgents/vsts* /Library/LaunchDaemons/"
+    if [ "$?" == "0" ]; then
+      echo "Done!"
+      expectify "sudo reboot"
+    fi
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
@@ -322,6 +323,7 @@ echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
 
 ##XAMARIN##
 expectify "brew cask install xamarin-ios"
+expectify "brew cask install xamarin-android"
 expectify "brew cask install visual-studio"
 expectify "brew install nuget"
 
