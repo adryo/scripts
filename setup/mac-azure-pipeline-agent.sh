@@ -150,8 +150,8 @@ installAzureAgent(){
     if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
       echo "Found service file. Trying to uninstall.."
       ~/$AGENT_INSTANCE/svc.sh uninstall
-      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.$DNS_PREFIX.${AGENT_NAME}.plist"; then
-        expectify "sudo rm /Library/LaunchDaemons/vsts.agent.$DNS_PREFIX.${AGENT_NAME}.plist"
+      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts*"; then
+        expectify "sudo rm /Library/LaunchDaemons/vsts*"
         echo "Uninstalled!"
       fi
     fi
@@ -204,7 +204,7 @@ installAzureAgent(){
 
     sleep 10
     echo "Installing Launch daemon"
-    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.$DNS_PREFIX.${AGENT_NAME}.plist /Library/LaunchDaemons/"
+    expectify "sudo cp $HOME/Library/LaunchAgents/vsts* /Library/LaunchDaemons/"
     echo "Done!"
   else
     echo "Unable to configure the service. Check logs for more info."
