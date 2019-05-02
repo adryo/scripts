@@ -141,9 +141,9 @@ installAzureAgent(){
   local readonly AGENT_INSTANCE="$AZURE_AGENT_HOME/agent01"
   
   # Extract the prefix of DNS from server, example: https://prefix.example.com/tfs
-  local DOMAIN="$(basename $(dirname '$SERVER_URL'))"
-  IFS='.' read -r -a DOMAIN <<< "$DOMAIN"
-  local readonly DNS_PREFIX="${DOMAIN[0]}"
+  # local DOMAIN="$(basename $(dirname '$SERVER_URL'))"
+  # IFS='.' read -r -a DOMAIN <<< "$DOMAIN"
+  # local readonly DNS_PREFIX="${DOMAIN[0]}"
   
   if [ -d ~/$AZURE_AGENT_HOME ]; then
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
@@ -206,6 +206,8 @@ installAzureAgent(){
     echo "Installing Launch daemon"
     expectify "sudo cp $HOME/Library/LaunchAgents/vsts* /Library/LaunchDaemons/"
     echo "Done!"
+    
+    expectify "sudo reboot"
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
