@@ -139,16 +139,19 @@ installAzureAgent(){
 
   local readonly AZURE_AGENT_HOME="AzureAgents"
   local readonly AGENT_INSTANCE="$AZURE_AGENT_HOME/agent01"
+  
+  # Extract the prefix of DNS from server, example: https://prefix.example.com/tfs
   local DOMAIN="$(basename $(dirname '$SERVER_URL'))"
   IFS='.' read -r -a DOMAIN <<< "$DOMAIN"
-
+  local readonly DNS_PREFIX="${DOMAIN[0]}"
+  
   if [ -d ~/$AZURE_AGENT_HOME ]; then
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
     if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
       echo "Found service file. Trying to uninstall.."
       ~/$AGENT_INSTANCE/svc.sh uninstall
-      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.${DOMAIN[0]}.${AGENT_NAME}.plist"; then
-        expectify "sudo rm /Library/LaunchDaemons/vsts.agent.${DOMAIN[0]}.${AGENT_NAME}.plist"
+      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.$DNS_PREFIX.${AGENT_NAME}.plist"; then
+        expectify "sudo rm /Library/LaunchDaemons/vsts.agent.$DNS_PREFIX.${AGENT_NAME}.plist"
         echo "Uninstalled!"
       fi
     fi
@@ -201,7 +204,7 @@ installAzureAgent(){
 
     sleep 10
     echo "Installing Launch daemon"
-    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.${DOMAIN[0]}.${AGENT_NAME}.plist /Library/LaunchDaemons/"
+    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.$DNS_PREFIX.${AGENT_NAME}.plist /Library/LaunchDaemons/"
     echo "Done!"
   else
     echo "Unable to configure the service. Check logs for more info."
