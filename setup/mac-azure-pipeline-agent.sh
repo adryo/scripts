@@ -308,11 +308,6 @@ if ! type brew >/dev/null 2>&1; then
   exit 2
 fi
 
-##XAMARIN##
-expectify "brew cask install xamarin-ios"
-expectify "brew cask install visual-studio"
-expectify "brew install nuget"
-
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
 #The easiest way to install Oracle Java JDK 8 on Mac is via a pkg manager
@@ -320,9 +315,15 @@ expectify "brew install nuget"
 #brew tap AdoptOpenJDK/openjdk
 #expectify "brew cask install java8"
 #expectify "brew cask install adoptopenjdk8"
+expectify "brew cask install java"
 
 #Step 2: Add JAVA_HOME into env
 echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
+
+##XAMARIN##
+expectify "brew cask install xamarin-ios"
+expectify "brew cask install visual-studio"
+expectify "brew install nuget"
 
 if [ "$INSTALL_ANDROID" == "1" ]; then
   ##Android SDK##
