@@ -141,9 +141,9 @@ installAzureAgent(){
   local readonly AGENT_INSTANCE="$AZURE_AGENT_HOME/agent01"
   
   # Extract the prefix of DNS from server, example: https://prefix.example.com/tfs
-  # local DOMAIN="$(basename $(dirname '$SERVER_URL'))"
-  # IFS='.' read -r -a DOMAIN <<< "$DOMAIN"
-  # local readonly DNS_PREFIX="${DOMAIN[0]}"
+  local DOMAIN="$(basename $(dirname '$SERVER_URL'))"
+  IFS='.' read -r -a DOMAIN <<< "$DOMAIN"
+  local readonly DNS_PREFIX="${DOMAIN[0]}"
   
   if [ -d ~/$AZURE_AGENT_HOME ]; then
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
@@ -204,11 +204,7 @@ installAzureAgent(){
 
     sleep 10
     echo "Installing Launch daemon"
-    expectify_digit "sudo cp $HOME/Library/LaunchAgents/vsts* /Library/LaunchDaemons/"
-    if [ "$?" == "0" ]; then
-      echo "Done!"
-      expectify "sudo reboot"
-    fi
+    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.$DNS_PREFIX.$AGENT_NAME.plist /Library/LaunchDaemons/"
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
@@ -323,7 +319,6 @@ echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
 
 ##XAMARIN##
 expectify "brew cask install xamarin-ios"
-expectify "brew cask install xamarin-android"
 expectify "brew cask install visual-studio"
 expectify "brew install nuget"
 
@@ -350,6 +345,9 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
 
   ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
   mv ~/Library/Android/sdk/android-ndk ~/Library/Android/sdk/ndk-bundle
+  
+  # Install xamarin android
+  expectify "brew cask install xamarin-android"
 else
   echo "Skipping android installation..."
 fi
@@ -379,9 +377,6 @@ echo 'export LANGUAGE="en_US.UTF-8"' >>~/.bash_profile
 # Register xcode-select for remotely use
 rule="$USER  ALL=NOPASSWD:/usr/bin/xcode-select"
 expectify "sudo /bin/sh -c \"echo $rule >> /etc/sudoers\""
-
-# Install SBT
-expectify "brew install sbt"
 
 # Install gems
 expectify "sudo gem install xcodeproj"
