@@ -576,10 +576,10 @@ deployVM(){
       echo "Attached HDD!"
     fi
 
-    temp=$VM_SNAPSHOT_TAG
-    VM_SNAPSHOT_TAG="VM-Deployed"
-    runSnapshot
-    VM_SNAPSHOT_TAG=$temp
+    #temp=$VM_SNAPSHOT_TAG
+    #VM_SNAPSHOT_TAG="VM-Deployed"
+    #runSnapshot
+    #VM_SNAPSHOT_TAG=$temp
     
     result "Virtual Machine ready!"
   fi
