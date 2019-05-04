@@ -204,7 +204,7 @@ installAzureAgent(){
 
     sleep 10
     echo "Installing Launch daemon"
-    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.$DNS_PREFIX.$AGENT_NAME.plist /Library/LaunchDaemons/"
+    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.devops.$AGENT_NAME.plist /Library/LaunchDaemons/"
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
