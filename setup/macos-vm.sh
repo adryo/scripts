@@ -594,7 +594,10 @@ runVM() {
 
     if [ $? -eq 0 ]; then
       result "Virtual Machine running..."
-      info "Connect via RDP to '$IP_ADDRESS:$RDP_PORT' or 'ssh $USER@$IP_ADDRESS -p $SSH_PORT'"
+      if [[ "$(vboxmanage showvminfo $VM | grep 'host port')" =~ (host\ port\ =\ [0-9]+) ]]; then
+        SSH_PORT=${BASH_REMATCH[1]/host\ port\ =\ /}
+      fi
+      info "Connect via RDP to '$IP_ADDRESS:$RDP_PORT' or 'ssh user@$IP_ADDRESS -p $SSH_PORT'"
     else
       result "Unable to start Virtual Machine, probably it means that virtualization is not enabled."
       exit 1
