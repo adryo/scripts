@@ -27,7 +27,7 @@ readonly VM_VRAM="128"
 readonly VBOX_VERSION="6.0"
 VM_DIR="$HOME/VirtualBox VMs/$VM"
 
-RDP_PORT="3389" # Can be changed using option --vm-rdp-port
+RDP_PORT="3390-4000" # Can be changed using option --vm-rdp-port
 SSH_PORT="2222" # Can be changed using option --vm-ssh-port
 
 DOWNLOAD_MODE="ftp"
