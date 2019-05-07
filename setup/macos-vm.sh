@@ -4,11 +4,11 @@
 # Run macOS 10.14 Mojave in Virtualbox.
 #
 ###############################################################################
-# bash <(curl https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) all --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
+# bash <(curl https://raw.githubusercontent.com/adryo/scripts/master/setup/macos-vm.sh) all --logon-password S3cr3t --vm-ram-size 6 --ftp-host "ftp://myown.ftp.net/ci_mojave/" --ftp-user user --ftp-password password --vm-rdp-port 3390
 # Core parameters #############################################################
 
 # Import globals
-source /dev/stdin <<<"$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<<"$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/globals.sh)" || exit 1
 
 # Global Variables
 VM=""                # VM takes the name according the installation media file name. Ex. MacOS-Mojave. Change using option --vm-name
@@ -72,7 +72,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >>$scriptFile
     echo "#" >>$scriptFile
     echo "# Importing online file" >>$scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/macos-vm.sh) "$@" || exit 1' >>$scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/macos-vm.sh) "$@" || exit 1' >>$scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
@@ -576,10 +576,10 @@ deployVM(){
       echo "Attached HDD!"
     fi
 
-    temp=$VM_SNAPSHOT_TAG
-    VM_SNAPSHOT_TAG="VM-Deployed"
-    runSnapshot
-    VM_SNAPSHOT_TAG=$temp
+    #temp=$VM_SNAPSHOT_TAG
+    #VM_SNAPSHOT_TAG="VM-Deployed"
+    #runSnapshot
+    #VM_SNAPSHOT_TAG=$temp
     
     result "Virtual Machine ready!"
   fi
@@ -752,7 +752,7 @@ main() {
     installVBoxClient)
       echo "VBox Client depends on Virtual Box, so this task will check and automatically install if something is missing."
       runChecks
-      curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/ubuntu-phpvbox-client.sh -o ubuntu-phpvbox-client.sh
+      curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/ubuntu-phpvbox-client.sh -o ubuntu-phpvbox-client.sh
       chmod +x ubuntu-phpvbox-client.sh
       expectify "./ubuntu-phpvbox-client.sh $CURRENT_LOGON_PASSWORD"
       rm ubuntu-phpvbox-client.sh

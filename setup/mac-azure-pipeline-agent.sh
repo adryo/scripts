@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import globals
-source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/globals.sh)" || exit 1
+source /dev/stdin <<< "$(curl --insecure -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/globals.sh)" || exit 1
 
 # Global Variables
 APPLE_USER=""
@@ -9,8 +9,8 @@ APPLE_PASSWORD=""
 
 # TFS Variables
 # VSTS Agent Variables
-readonly AZURE_AGENT_VERSION="2.150.0"
-AGENT_NAME="VM-$GLOBAL_PLATFORM_OS-Mojave01"
+readonly AZURE_AGENT_VERSION="2.150.3"
+AGENT_NAME="VM-$GLOBAL_PLATFORM_OS-$(uuidgen)"
 CONFIGURE_AZURE_PIPELINE_AGENT=1
 SERVER_URL=""
 TOKEN=""
@@ -18,7 +18,7 @@ POOL=""
 TIMEZONE=""
 INSTALL_XCODE=1
 XCODE_VERSIONS=(10.2)
-INSTALL_ANDROID=1
+INSTALL_ANDROID=0
 
 # This function is used to initialize the variables according to the supplied values through the scripts arguments
 while [ "$#" -ne 0 ]; do
@@ -36,7 +36,7 @@ while [ "$#" -ne 0 ]; do
     echo "#!/usr/bin/env bash" >> $scriptFile
     echo "#" >> $scriptFile
     echo "# Importing online file" >> $scriptFile
-    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/develop/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
+    echo 'bash <(curl -sS https://raw.githubusercontent.com/adryo/scripts/master/setup/mac-azure-pipeline-agent.sh) "$@" || exit 1' >> $scriptFile
     chmod +x "$scriptFile"
     echo "Script installed"
     exit 0
@@ -52,8 +52,8 @@ while [ "$#" -ne 0 ]; do
   --skip-agent-config)
     CONFIGURE_AZURE_PIPELINE_AGENT=0
     ;;
-  --skip-android)
-    INSTALL_ANDROID=0
+  --install-android)
+    INSTALL_ANDROID=1
     ;;
   --agent-name)
     AGENT_NAME=$1
@@ -104,7 +104,7 @@ while [ "$#" -ne 0 ]; do
     echo "--token: A valid PAT to use during agent configuration."
     echo "--pool-name: The pool where this agent will belong. Default is 'default'."
     echo "--timezone: The timezone to configure the agent with. Default is 'Europe/Paris'."
-    echo "--skip-android: Avoids the android sdk, ndk, tools installation and configuration."
+    echo "--install-android: If specified, installs the android sdk, ndk, tools and configures the env to use them."
     echo "--skip-xcode-install: Avoids the xcode installation."
     echo "--install-xcode: By default this script will install always Xcode 10.1, but other versions can be set to be automatically installed too. Set the version number separated by comma, ex: '--install-xcode 9.4,10.0'."
     exit 0
@@ -116,6 +116,9 @@ while [ "$#" -ne 0 ]; do
   esac
 done
 
+##VSTS Agent##
+#https://github.com/Microsoft/azure-pipelines-agent/blob/master/README.md
+#https://github.com/Microsoft/azure-pipelines-agent/blob/master/docs/start/envosx.md
 installAzureAgent(){
   if [ -z "$SERVER_URL" ]; then
     read -p "TFS server's url: " SERVER_URL
@@ -136,14 +139,19 @@ installAzureAgent(){
 
   local readonly AZURE_AGENT_HOME="AzureAgents"
   local readonly AGENT_INSTANCE="$AZURE_AGENT_HOME/agent01"
-
+  
+  # Extract the prefix of DNS from server, example: https://prefix.example.com/tfs
+  local DOMAIN="$(basename $(dirname '$SERVER_URL'))"
+  IFS='.' read -r -a DOMAIN <<< "$DOMAIN"
+  local readonly DNS_PREFIX="${DOMAIN[0]}"
+  
   if [ -d ~/$AZURE_AGENT_HOME ]; then
     echo "Found directory $AZURE_AGENT_HOME. Trying to remove it..."
     if [ -f ~/$AGENT_INSTANCE/svc.sh ]; then
       echo "Found service file. Trying to uninstall.."
       ~/$AGENT_INSTANCE/svc.sh uninstall
-      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist"; then
-        expectify "sudo rm /Library/LaunchDaemons/vsts.agent.tfs.${AGENT_NAME}.plist"
+      if [ $? = 0 ] && rm "~/Library/LaunchAgents/vsts*"; then
+        expectify "sudo rm /Library/LaunchDaemons/vsts*"
         echo "Uninstalled!"
       fi
     fi
@@ -194,9 +202,9 @@ installAzureAgent(){
     # Start the service
     ./svc.sh start
 
+    sleep 10
     echo "Installing Launch daemon"
-    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.tfs.${AGENT_NAME}.plist /Library/LaunchDaemons/"
-    echo "Done!"
+    expectify "sudo cp $HOME/Library/LaunchAgents/vsts.agent.devops.$AGENT_NAME.plist /Library/LaunchDaemons/"
   else
     echo "Unable to configure the service. Check logs for more info."
   fi
@@ -300,11 +308,19 @@ fi
 ##JDK##
 #Step 1: Install Oracle Java JDK 8
 #The easiest way to install Oracle Java JDK 8 on Mac is via a pkg manager
-brew tap caskroom/versions
-expectify "brew cask install java8"
+#brew tap caskroom/versions
+#brew tap AdoptOpenJDK/openjdk
+#expectify "brew cask install java8"
+#expectify "brew cask install adoptopenjdk8"
+expectify "brew cask install java"
 
 #Step 2: Add JAVA_HOME into env
 echo 'export JAVA_HOME="$(/usr/libexec/java_home)"' >>~/.bash_profile
+
+##XAMARIN##
+expectify "brew cask install xamarin-ios"
+expectify "brew cask install visual-studio"
+expectify "brew install nuget"
 
 if [ "$INSTALL_ANDROID" == "1" ]; then
   ##Android SDK##
@@ -315,22 +331,7 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
 
   mkdir -p ~/.android/
   touch ~/.android/repositories.cfg
-
-  #Installing all build-tools and platforms
-  sdkmanager --list --verbose | grep -v "^Info:|^\s|^$|^done$" >>out.txt
-  isAvailable=false
-  while IFS='' read -r line || [[ -n "$line" ]]; do
-    if [[ ($line == *"Available"*) || ("$isAvailable" == true) ]]; then
-      isAvailable=true
-      if [[ ($line == *"build-tools;"*) || ($line == *"platforms;"*) ]]; then
-        yes | sdkmanager ""$line""
-      fi
-    fi
-
-  done <"out.txt"
-
-  sdkmanager --update
-
+  
   #Step 3: Configure env
   echo 'export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"' >>~/.bash_profile
   echo 'export ANDROID_NDK_HOME="/usr/local/share/android-ndk"' >>~/.bash_profile
@@ -344,6 +345,9 @@ if [ "$INSTALL_ANDROID" == "1" ]; then
 
   ln -s /usr/local/share/android-ndk /usr/local/share/android-sdk
   mv ~/Library/Android/sdk/android-ndk ~/Library/Android/sdk/ndk-bundle
+  
+  # Install xamarin android
+  expectify "brew cask install xamarin-android"
 else
   echo "Skipping android installation..."
 fi
@@ -374,24 +378,15 @@ echo 'export LANGUAGE="en_US.UTF-8"' >>~/.bash_profile
 rule="$USER  ALL=NOPASSWD:/usr/bin/xcode-select"
 expectify "sudo /bin/sh -c \"echo $rule >> /etc/sudoers\""
 
-# Install SBT
-expectify "brew install sbt"
-
 # Install gems
 expectify "sudo gem install xcodeproj"
 
 # Install cocoapods
 expectify "sudo gem install cocoapods"
 
-##VSTS Agent##
-#https://github.com/Microsoft/azure-pipelines-agent/blob/master/README.md
-#https://github.com/Microsoft/azure-pipelines-agent/blob/master/docs/start/envosx.md
-
 #Step 1: Install the prerequisites
 expectify "brew install openssl"
-echo 'export LDFLAGS="-L/usr/local/opt/openssl/lib"' >>~/.bash_profile
-echo 'export CPPFLAGS="-I/usr/local/opt/openssl/include"' >>~/.bash_profile
-echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >>~/.bash_profile
+
 # Ensure folder exists on machine
 mkdir -p /usr/local/lib/
 ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/
