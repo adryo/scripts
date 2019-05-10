@@ -354,8 +354,9 @@ fi
 
 # Install C++ build tools
 expectify "brew install cmake"
-
+expectify "brew install python3"
 expectify "brew install ninja"
+
 ##Node JS##
 #Step 1: Installing Node.js and npm
 expectify "brew install node"
