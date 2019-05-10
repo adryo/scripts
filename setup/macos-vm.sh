@@ -27,7 +27,7 @@ readonly VM_VRAM="128"
 readonly VBOX_VERSION="6.0"
 VM_DIR="$HOME/VirtualBox VMs/$VM"
 
-RDP_PORT="3389" # Can be changed using option --vm-rdp-port
+RDP_PORT="3390-4000" # Can be changed using option --vm-rdp-port
 SSH_PORT="2222" # Can be changed using option --vm-ssh-port
 
 DOWNLOAD_MODE="ftp"
@@ -594,7 +594,10 @@ runVM() {
 
     if [ $? -eq 0 ]; then
       result "Virtual Machine running..."
-      info "Connect via RDP to '$IP_ADDRESS:$RDP_PORT' or 'ssh $USER@$IP_ADDRESS -p $SSH_PORT'"
+      if [[ "$(vboxmanage showvminfo $VM | grep 'host port')" =~ (host\ port\ =\ [0-9]+) ]]; then
+        SSH_PORT="${BASH_REMATCH[1]/host\ port\ =\ /}"
+      fi
+      info "Connect via RDP to '$IP_ADDRESS:$RDP_PORT' or 'ssh user@$IP_ADDRESS -p $SSH_PORT'"
     else
       result "Unable to start Virtual Machine, probably it means that virtualization is not enabled."
       exit 1
