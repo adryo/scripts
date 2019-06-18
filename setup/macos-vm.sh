@@ -556,7 +556,7 @@ deployVM(){
     vboxmanage closemedium disk "$MEDIA_DIR/$name"
 
     #Clone the media
-    vboxmanage clonemedium disk "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VMDK
+    vboxmanage clonemedium disk "$MEDIA_DIR/$name" "$VM_HDD_FILE" --format VDI
 
     # Unregistry the DISK
     vboxmanage closemedium disk "$MEDIA_DIR/$name"
