@@ -21,7 +21,9 @@ VM_SNAPSHOT_TAG=""
 VM_RAW_DISK=""
 VM_RAW_DISK_PARTITIONS=""
 VM_DEFAULT_STORAGE_CTL="SATA"
-VMDK_FILE="*.vmdk"
+
+readonly DEFAULT_VDISK_EXTENSION=".vdi"
+VIRTUAL_DISK_FILE="*$DEFAULT_VDISK_EXTENSION"
 
 readonly VM_VRAM="128"
 readonly VBOX_VERSION="6.0"
@@ -109,8 +111,8 @@ while [ "$#" -ne 0 ]; do
     FTP_DIR=$1
     shift
     ;;
-  --vmdk-file)
-    VMDK_FILE=$1
+  --virtual-disk-file)
+    VIRTUAL_DISK_FILE=$1
     shift
     ;;
   --vm-name)
@@ -203,6 +205,7 @@ while [ "$#" -ne 0 ]; do
     echo "--vm-rdp-port: Sets the port to connect via RDP to the VM's instance while it's running. Default is 3389."
     echo "--vm-ssh-port: Sets the port to connect via SSH to the VM's instance while it's running. Default is 2222."
     echo "--vm-snapshot-tag: Sets a custom tag identifier for the snapshot. Only usable when executing snapshot task."
+	echo "--virtual-disk-file: Sets the specific Virtual Disk file to be used."
     exit 0
     ;;
   all | deploy | deployAgent | check | info | run | stop | stash | snapshot | attach | detach | install | installVBoxClient | create | prepare)
@@ -258,7 +261,7 @@ downloadMedias() {
   local _pattern="Mac*.iso*"
 
   if [ -z "$1" ]; then
-    read -p "File or pattern ex. [MacOS-Mojave.iso | Mac*.vmdk*] (Press ENTER to Mac*.iso*): " _pattern
+    read -p "File or pattern ex. [MacOS-Mojave.iso | Mac*$DEFAULT_VDISK_EXTENSION*] (Press ENTER to Mac*.iso*): " _pattern
   fi
   local readonly PATTERN=${1:-$_pattern}
   if [ -z "$FTP_HOST" ]; then
@@ -446,7 +449,7 @@ createHDD(){
     mkdir -p "$VM_DIR"
   fi
 
-  VM_HDD_FILE="${VM_DIR}${VM}.vmdk"
+  VM_HDD_FILE="${VM_DIR}${VM}$DEFAULT_VDISK_EXTENSION"
 
   info "Searchig for VM HDD '$VM_HDD_FILE' ..." 90
   if [ ! -e "$VM_HDD_FILE" ]; then
@@ -538,7 +541,7 @@ createVM() {
 
 deployVM(){
   checkVMName || exit 0
-  local readonly media_pattern=${VMDK_FILE:-"*.vmdk"}
+  local readonly media_pattern=${VIRTUAL_DISK_FILE:-"*$DEFAULT_VDISK_EXTENSION"}
   
   checkInstallationMedia $media_pattern $media_pattern
   if [ $? -eq 0 ]; then
@@ -550,7 +553,7 @@ deployVM(){
     local name="$(find $MEDIA_DIR -maxdepth 1 -type f -name $media_pattern -print -quit)"
     name=${name##*/}
     echo "Instalation media: '$name'"
-    VM_HDD_FILE="$VM_DIR/$VM.vmdk"
+    VM_HDD_FILE="$VM_DIR/${VM}$DEFAULT_VDISK_EXTENSION"
     echo "Started to clone media $name"
     # Unmount before clone
     vboxmanage closemedium disk "$MEDIA_DIR/$name"
