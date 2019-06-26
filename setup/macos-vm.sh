@@ -446,7 +446,7 @@ createHDD(){
     mkdir -p "$VM_DIR"
   fi
 
-  VM_HDD_FILE="${VM_DIR}${VM}.vmdk"
+  VM_HDD_FILE="${VM_DIR}/${VM}.vmdk"
 
   info "Searchig for VM HDD '$VM_HDD_FILE' ..." 90
   if [ ! -e "$VM_HDD_FILE" ]; then
