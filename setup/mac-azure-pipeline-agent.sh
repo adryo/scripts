@@ -359,7 +359,9 @@ expectify "brew install ninja"
 
 ##Node JS##
 #Step 1: Installing Node.js and npm
-expectify "brew install node"
+expectify "brew install node@10"
+expectify "brew link --force node@10"
+echo 'export PATH="/usr/local/opt/node@10/bin:$PATH"' >>~/.bash_profile
 
 echo 'export PATH="/usr/local/opt/icu4c/bin:$PATH"' >>~/.bash_profile
 echo 'export PATH="/usr/local/opt/icu4c/sbin:$PATH"' >>~/.bash_profile
